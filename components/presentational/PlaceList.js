@@ -23,12 +23,12 @@ const specificType = [
     en: 'cafeteria',
   },
 ];
-const ViewBoxesWithColorAndText = () => {
+const ViewBoxesWithColorAndText = ({navigation}) => {
   const [places, setPlaces] = useState([]);
 
   async function getPlaces() {
     try {
-      let response = await fetch('https://bb47a98d.ngrok.io/places');
+      let response = await fetch('http://192.168.2.5:1337/places');
       let json = await response.json();
       setPlaces(json);
       console.log(json);
@@ -37,12 +37,17 @@ const ViewBoxesWithColorAndText = () => {
     }
   }
 
+  function handlePress(place) {
+    navigation.navigate('PlaceDetails');
+  }
+
   useEffect(() => {
     getPlaces();
   }, []);
   return places.map((p, i) => {
     return (
       <TouchableOpacity
+        onPress={() => handlePress(p)}
         key={i}
         style={{
           flexDirection: 'row',
@@ -156,9 +161,8 @@ const Wrapper = ({navigation}) => {
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={{height: '100%'}}>
         <ScrollView contentInsetAdjustmentBehavior="automatic">
-          <ViewBoxesWithColorAndText />
+          <ViewBoxesWithColorAndText navigation={navigation} />
         </ScrollView>
-        <Search navigation={navigation} />
       </SafeAreaView>
     </>
   );

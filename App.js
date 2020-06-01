@@ -30,6 +30,8 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
 import PlaceList from './components/presentational/PlaceList';
 import Test from './components/presentational/Test';
+import Search from './components/presentational/SearchButton';
+import PlaceDetails from './components/presentational/PlaceDetails';
 //import Home from './components/presentational/Home';
 
 const Stack = createStackNavigator();
@@ -50,12 +52,27 @@ const App: () => React$Node = () => {
         <Stack.Screen
           name="Home"
           component={PlaceList}
-          options={{title: 'Αποτελέσματα'}}
+          options={({navigation, route}) => ({
+            title: 'Αποτελέσματα',
+            headerRight: () => (
+              <Search
+                onPress={() => alert('This is a button!')}
+                title="Info"
+                color="#fff"
+                navigation={navigation}
+              />
+            ),
+          })}
         />
         <Stack.Screen
           name="Search"
           component={Test}
           options={{title: 'Που θες να πάς;'}}
+        />
+        <Stack.Screen
+          name="PlaceDetails"
+          component={PlaceDetails}
+          options={{title: 'Λεπτομέρειες'}}
         />
       </Stack.Navigator>
     </NavigationContainer>
