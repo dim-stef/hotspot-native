@@ -3,6 +3,8 @@ import React, {useEffect, useState} from 'react';
 import {View, Text, Image, TouchableOpacity} from 'react-native';
 import {SafeAreaView, StyleSheet, ScrollView, StatusBar} from 'react-native';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
+import PplButton from './PplButton';
+
 
 const COLORS = {
   backgroundLow: '#4caf5096',
@@ -28,7 +30,7 @@ const ViewBoxesWithColorAndText = ({navigation}) => {
 
   async function getPlaces() {
     try {
-      let response = await fetch('http://192.168.2.5:1337/places');
+      let response = await fetch('http://192.168.1.9:1337/places');
       let json = await response.json();
       setPlaces(json);
       console.log(json);
@@ -38,7 +40,7 @@ const ViewBoxesWithColorAndText = ({navigation}) => {
   }
 
   function handlePress(place) {
-    navigation.navigate('PlaceDetails');
+    navigation.navigate('PlaceDetails', {p: place});
   }
 
   useEffect(() => {
@@ -68,7 +70,7 @@ const ViewBoxesWithColorAndText = ({navigation}) => {
         }}>
         <Image
           source={{
-            uri: `http://192.168.2.3:1337${p.profile_image.url}`,
+            uri: `http://192.168.1.9:1337${p.profile_image.url}`,
           }}
           style={{
             height: 60,
@@ -89,37 +91,7 @@ const ViewBoxesWithColorAndText = ({navigation}) => {
         </View>
         <View style={{flexGrow: 1, marginLeft: 10, alignItems: 'center'}}>
           <Text style={{fontSize: 12, color: 'gray'}}>Κοσμος</Text>
-          <View
-            style={{
-              backgroundColor:
-                p.population === 'low'
-                  ? COLORS.backgroundLow
-                  : p.population === 'medium'
-                  ? COLORS.backgroundMedium
-                  : COLORS.backgroundHigh,
-              flexGrow: 1,
-              borderRadius: 5,
-              width: '100%',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <Text
-              style={{
-                fontWeight: 'bold',
-                color:
-                  p.population === 'low'
-                    ? COLORS.textLow
-                    : p.population === 'medium'
-                    ? COLORS.textMedium
-                    : COLORS.textHigh,
-              }}>
-              {p.population === 'low'
-                ? 'Λίγος'
-                : p.population === 'medium'
-                ? 'Μεσαίος'
-                : 'Πολύς'}
-            </Text>
-          </View>
+          <PplButton population = {p.population}/>
         </View>
       </TouchableOpacity>
     );

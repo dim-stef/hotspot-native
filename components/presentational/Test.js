@@ -47,7 +47,7 @@ function Test() {
   const [value, setValue] = useState('');
   const [city, setCity] = useState(cities[0].value);
   const [district, setDistrict] = useState(districts[0].value);
-
+  
   return (
     <View
       style={{
@@ -111,6 +111,7 @@ function Test() {
           })}
         </Picker>
       </View>
+   
       <TouchableOpacity
         activeOpacity={0.6}
         underlayColor="#DDDDDD"
@@ -128,6 +129,7 @@ function Test() {
           Εφαρμογή
         </Text>
       </TouchableOpacity>
+
     </View>
   );
 }
