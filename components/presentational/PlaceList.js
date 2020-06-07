@@ -5,7 +5,6 @@ import {SafeAreaView, StyleSheet, ScrollView, StatusBar} from 'react-native';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
 import PplButton from './PplButton';
 
-
 const COLORS = {
   backgroundLow: '#4caf5096',
   backgroundMedium: '#03a9f45e',
@@ -30,12 +29,10 @@ const ViewBoxesWithColorAndText = ({navigation}) => {
 
   async function getPlaces() {
     try {
-      let response = await fetch('http://192.168.1.9:1337/places');
+      let response = await fetch('http://192.168.2.5:1337/places');
       let json = await response.json();
       setPlaces(json);
-      console.log(json);
     } catch (e) {
-      console.log(e);
     }
   }
 
@@ -70,7 +67,7 @@ const ViewBoxesWithColorAndText = ({navigation}) => {
         }}>
         <Image
           source={{
-            uri: `http://192.168.1.9:1337${p.profile_image.url}`,
+            uri: `http://192.168.2.5:1337${p.profile_image.url}`,
           }}
           style={{
             height: 60,
@@ -91,7 +88,7 @@ const ViewBoxesWithColorAndText = ({navigation}) => {
         </View>
         <View style={{flexGrow: 1, marginLeft: 10, alignItems: 'center'}}>
           <Text style={{fontSize: 12, color: 'gray'}}>Κοσμος</Text>
-          <PplButton population = {p.population}/>
+          <PplButton population={p.population} />
         </View>
       </TouchableOpacity>
     );
@@ -124,10 +121,8 @@ function Search({navigation}) {
   );
 }
 
+
 const Wrapper = ({navigation}) => {
-  useEffect(() => {
-    console.log('mount');
-  }, []);
   return (
     <>
       <StatusBar barStyle="dark-content" />

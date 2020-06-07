@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 import 'react-native-gesture-handler';
-import React from 'react';
+import React, {useState, useContext, useEffect, useLayoutEffect} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -28,9 +28,13 @@ import AntDesignIcons from 'react-native-vector-icons/AntDesign';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
+import AsyncStorage from '@react-native-community/async-storage';
+import {UserContext} from './components/Context';
 import PlaceList from './components/presentational/PlaceList';
 import Test from './components/presentational/Test';
 import Search from './components/presentational/SearchButton';
+import Login from './components/presentational/Login';
+import User from './components/presentational/UserButton';
 import PlaceDetails from './components/presentational/PlaceDetails';
 //import Home from './components/presentational/Home';
 
@@ -39,43 +43,88 @@ const Tab = createMaterialBottomTabNavigator();
 
 //<Ionicons name={iconName} size={size} color={color} />
 const App: () => React$Node = () => {
+  const [isAuth, setAuth] = useState(null);
+
+  async function getUserData() {
+    let token = null;
+    try {
+      token = await AsyncStorage.getItem('token');
+    } catch (e) {
+      // saving error
+    }
+    if (token) {
+      try {
+        let response = await fetch('http://192.168.2.5:1337/users/me', {
+          method: 'GET',
+          headers: {
+            Authorization: 'Bearer ' + token,
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = await response.json();
+        console.log(data);
+        setAuth(token);
+      } catch (e) {
+        try {
+          console.log('setting token', token);
+          await AsyncStorage.setItem('token', null);
+        } catch (e) {}
+        setAuth(null);
+      }
+    }
+  }
+
+  useEffect(() => {
+    getUserData();
+  }, []);
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          cardStyle: {backgroundColor: 'white'},
-        }}
-        initialRouteName="Home"
-        activeColor="black"
-        inactiveColor="gray"
-        barStyle={{backgroundColor: 'white'}}>
-        <Stack.Screen
-          name="Home"
-          component={PlaceList}
-          options={({navigation, route}) => ({
-            title: 'Αποτελέσματα',
-            headerRight: () => (
-              <Search
-                onPress={() => alert('This is a button!')}
-                title="Info"
-                color="#fff"
-                navigation={navigation}
-              />
-            ),
-          })}
-        />
-        <Stack.Screen
-          name="Search"
-          component={Test}
-          options={{title: 'Που θες να πάς;'}}
-        />
-        <Stack.Screen
-          name="PlaceDetails"
-          component={PlaceDetails}
-          options={{title: 'Λεπτομέρειες'}}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <UserContext.Provider value={{isAuth: isAuth, setAuth: setAuth}}>
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{
+            cardStyle: {backgroundColor: 'white'},
+          }}
+          initialRouteName="Home"
+          activeColor="black"
+          inactiveColor="gray"
+          barStyle={{backgroundColor: 'white'}}>
+          <Stack.Screen
+            name="Home"
+            component={PlaceList}
+            options={({navigation, route}) => ({
+              title: 'Αποτελέσματα',
+              headerRight: () => (
+                <Search title="Info" color="#fff" navigation={navigation} />
+              ),
+              headerLeft: () => (
+                <User
+                  onPress={() => alert('This is a button!')}
+                  title="Info"
+                  color="#fff"
+                  navigation={navigation}
+                />
+              ),
+            })}
+          />
+          <Stack.Screen
+            name="Search"
+            component={Test}
+            options={{title: 'Που θες να πάς;'}}
+          />
+          <Stack.Screen
+            name="PlaceDetails"
+            component={PlaceDetails}
+            options={{title: 'Λεπτομέρειες'}}
+          />
+          <Stack.Screen
+            name="Login"
+            component={Login}
+            options={{title: 'Λεπτομέρειες'}}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </UserContext.Provider>
   );
 };
 

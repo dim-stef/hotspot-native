@@ -1,20 +1,13 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useEffect, useState} from 'react';
 import {View, Text, Image, TouchableOpacity} from 'react-native';
-import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  StatusBar,
-  TouchableNativeFeedback,
-} from 'react-native';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
 import Ripple from 'react-native-material-ripple';
 
-function Search({navigation, ...rest}) {
+function User({navigation, ...rest}) {
   return (
     <TouchableOpacity
-      onPress={() => navigation.navigate('Search')}
+      onPress={() => navigation.navigate('Login')}
       style={{
         borderRadius: 100,
         padding: 10,
@@ -22,9 +15,9 @@ function Search({navigation, ...rest}) {
         margin: 10,
         shadowColor: 'black',
       }}>
-      <AntDesignIcons name="search1" size={26} color="black" />
+      <AntDesignIcons name="user" size={26} color="black" />
     </TouchableOpacity>
   );
 }
 
-export default Search;
+export default User;
