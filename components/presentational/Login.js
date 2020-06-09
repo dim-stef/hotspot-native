@@ -21,7 +21,7 @@ function Login() {
 
   async function handleLogin() {
     console.log(email, password);
-    let response = await fetch('http://192.168.2.5:1337/auth/local/', {
+    let response = await fetch('http://192.168.1.6:1337/auth/local/', {
       method: 'POST',
       headers: {
         Accept: 'application/json',

@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   TouchableHighlight,
 } from 'react-native';
+import GetLocation from 'react-native-get-location'
 import {SafeAreaView, StyleSheet, ScrollView, StatusBar} from 'react-native';
 import {Picker} from '@react-native-community/picker';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
@@ -47,7 +48,33 @@ function Test() {
   const [value, setValue] = useState('');
   const [city, setCity] = useState(cities[0].value);
   const [district, setDistrict] = useState(districts[0].value);
-  
+  const [gloc, setGloc] = useState();
+
+  async function getCity() {
+      try{
+        let response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${gloc.latitude},${gloc.longitude}&pretty=1&key=f38606b7c6c34f3fa99d1efbb5c92536&q`)
+        let data =await response.json();
+        console.log(data.results[0].components)
+      }catch(err){
+        console.warn(err);
+      }
+  }
+
+  async function getLocation() {
+      let temp = await GetLocation.getCurrentPosition({enableHighAccuracy: true, timeout: 15000});
+      setGloc(temp);
+  }
+
+  useEffect(()=>{
+    getLocation();
+  },[]);
+
+  useEffect(()=>{
+    if (gloc){
+      getCity();
+    }
+  },[gloc])
+
   return (
     <View
       style={{
@@ -111,7 +138,7 @@ function Test() {
           })}
         </Picker>
       </View>
-   
+
       <TouchableOpacity
         activeOpacity={0.6}
         underlayColor="#DDDDDD"

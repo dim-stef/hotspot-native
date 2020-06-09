@@ -1,18 +1,9 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useEffect, useState} from 'react';
 import {View, Text, Image, TouchableOpacity} from 'react-native';
-import {SafeAreaView, StyleSheet, ScrollView, StatusBar} from 'react-native';
+import {SafeAreaView, ScrollView, StatusBar} from 'react-native';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
 import PplButton from './PplButton';
-
-const COLORS = {
-  backgroundLow: '#4caf5096',
-  backgroundMedium: '#03a9f45e',
-  backgroundHigh: '#f403035e',
-  textLow: 'green',
-  textMedium: '#03a9f4',
-  textHigh: '#f44336',
-};
 
 const specificType = [
   {
@@ -29,11 +20,10 @@ const ViewBoxesWithColorAndText = ({navigation}) => {
 
   async function getPlaces() {
     try {
-      let response = await fetch('http://192.168.2.5:1337/places');
+      let response = await fetch('http://192.168.1.6:1337/places');
       let json = await response.json();
       setPlaces(json);
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   function handlePress(place) {
@@ -67,7 +57,7 @@ const ViewBoxesWithColorAndText = ({navigation}) => {
         }}>
         <Image
           source={{
-            uri: `http://192.168.2.5:1337${p.profile_image.url}`,
+            uri: `http://192.168.1.6:1337${p.profile_image.url}`,
           }}
           style={{
             height: 60,
@@ -120,7 +110,6 @@ function Search({navigation}) {
     </TouchableOpacity>
   );
 }
-
 
 const Wrapper = ({navigation}) => {
   return (

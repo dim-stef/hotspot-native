@@ -19,11 +19,9 @@ const colors = {
   };
 
 const PplButton = (props)=>{
-  console.log(props.population)
-  const population = props.population
-  
-    return(
+  const population = props.population.toLowerCase();
 
+    return(
       <>
         <View
         style={{
@@ -56,7 +54,7 @@ const PplButton = (props)=>{
           </Text>
         </View>
       </>
-      )  
+      )
 
 }
 
