@@ -5,6 +5,7 @@
  * @format
  * @flow strict-local
  */
+import Config from "react-native-config";
 import 'react-native-gesture-handler';
 import React, {useState, useContext, useEffect, useLayoutEffect} from 'react';
 import {
@@ -54,7 +55,7 @@ const App: () => React$Node = () => {
     }
     if (token) {
       try {
-        let response = await fetch('http://192.168.2.5:1337/users/me', {
+        let response = await fetch(Config.API_URL + '/users/me', {
           method: 'GET',
           headers: {
             Authorization: 'Bearer ' + token,

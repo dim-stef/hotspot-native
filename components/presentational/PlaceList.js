@@ -1,4 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
+import Config from 'react-native-config';
 import React, {useEffect, useState} from 'react';
 import {View, Text, Image, TouchableOpacity} from 'react-native';
 import {SafeAreaView, ScrollView, StatusBar} from 'react-native';
@@ -20,7 +21,8 @@ const ViewBoxesWithColorAndText = ({navigation}) => {
 
   async function getPlaces() {
     try {
-      let response = await fetch('http://192.168.1.6:1337/places');
+      console.log(Config.API_URL + '/places');
+      let response = await fetch(Config.API_URL + '/places');
       let json = await response.json();
       setPlaces(json);
     } catch (e) {}
@@ -57,7 +59,7 @@ const ViewBoxesWithColorAndText = ({navigation}) => {
         }}>
         <Image
           source={{
-            uri: `http://192.168.1.6:1337${p.profile_image.url}`,
+            uri: Config.API_URL + `${p.profile_image.url}`,
           }}
           style={{
             height: 60,

@@ -1,4 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
+import Config from "react-native-config";
 import React, {useState, useContext} from 'react';
 import {Dimensions, View, Text, Image, TouchableOpacity} from 'react-native';
 import PplButton from './PplButton';
@@ -12,7 +13,7 @@ function PlaceDetails({navigation, route}) {
   const width = Dimensions.get('window').width;
 
   if (p) {
-    const url = 'http://192.168.1.6:1337';
+    const url = Config.API_URL;
     const assesments = p.population_assessments.reverse();
     const images = {
       thumbnail: url + p.profile_image.formats.thumbnail.url,

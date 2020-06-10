@@ -1,4 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
+import Config from 'react-native-config';
 import React, {useEffect, useState, useContext} from 'react';
 import {View, Text, TextInput, Image, TouchableOpacity} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -6,7 +7,7 @@ import AntDesignIcons from 'react-native-vector-icons/AntDesign';
 import AnimateLoadingButton from 'react-native-animate-loading-button';
 import {UserContext} from '../Context';
 
-function Login() {
+function Login({navigation}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +22,7 @@ function Login() {
 
   async function handleLogin() {
     console.log(email, password);
-    let response = await fetch('http://192.168.1.6:1337/auth/local/', {
+    let response = await fetch(Config.API_URL + '/auth/local/', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -34,29 +35,19 @@ function Login() {
     });
 
     const content = await response.json();
+    loadingButton.showLoading(false);
 
     try {
       let token = await AsyncStorage.setItem('token', content.jwt);
       userContext.setAuth(token);
+      navigation.navigate('Home');
     } catch (e) {
       // saving error
     }
-
-    try {
-      const value = await AsyncStorage.getItem('token');
-      console.log(value);
-      if (value !== null) {
-        // value previously stored
-      }
-    } catch (e) {
-      // error reading value
-    }
-
-    console.log(content, email, password);
-    loadingButton.showLoading(false);
   }
+
   return userContext.isAuth ? (
-    <Text>Authenticated</Text>
+    <Logout navigation={navigation} />
   ) : (
     <View
       style={{
@@ -113,6 +104,37 @@ function Login() {
         onPress={handleClick}
       />
     </View>
+  );
+}
+
+function Logout({navigation}) {
+  const [loading, setLoading] = useState(false);
+  const [loadingButton, setLoadingButton] = useState(null);
+  const userContext = useContext(UserContext);
+
+  function handleClick() {
+    loadingButton.showLoading(true);
+
+    handleLogout();
+  }
+
+  function handleLogout() {
+    userContext.setAuth(null);
+    navigation.navigate('Home');
+  }
+
+  return (
+    <AnimateLoadingButton
+      ref={c => setLoadingButton(c)}
+      width={100}
+      height={50}
+      title="Αποσυνδέσου"
+      titleFontSize={16}
+      titleColor="rgb(255,255,255)"
+      backgroundColor="#0E86D4"
+      borderRadius={100}
+      onPress={handleClick}
+    />
   );
 }
 
