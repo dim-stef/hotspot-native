@@ -5,7 +5,7 @@
  * @format
  * @flow strict-local
  */
-import Config from "react-native-config";
+import Config from 'react-native-config';
 import 'react-native-gesture-handler';
 import React, {useState, useContext, useEffect, useLayoutEffect} from 'react';
 import {
@@ -33,10 +33,13 @@ import AsyncStorage from '@react-native-community/async-storage';
 import {UserContext} from './components/Context';
 import PlaceList from './components/presentational/PlaceList';
 import Test from './components/presentational/Test';
-import Search from './components/presentational/SearchButton';
+import SearchButton from './components/presentational/SearchButton';
+import PlaceSettingsButton from './components/presentational/PlaceSettingsButton';
 import Login from './components/presentational/Login';
 import User from './components/presentational/UserButton';
 import PlaceDetails from './components/presentational/PlaceDetails';
+import PlaceSettings from './components/presentational/PlaceSettings';
+import EditPlace from './components/presentational/EditPlace';
 //import Home from './components/presentational/Home';
 
 const Stack = createStackNavigator();
@@ -96,7 +99,11 @@ const App: () => React$Node = () => {
             options={({navigation, route}) => ({
               title: 'Αποτελέσματα',
               headerRight: () => (
-                <Search title="Info" color="#fff" navigation={navigation} />
+                <SearchButton
+                  title="Info"
+                  color="#fff"
+                  navigation={navigation}
+                />
               ),
               headerLeft: () => (
                 <User
@@ -121,7 +128,26 @@ const App: () => React$Node = () => {
           <Stack.Screen
             name="Login"
             component={Login}
-            options={{title: 'Λεπτομέρειες'}}
+            options={{title: 'Συνδέσου'}}
+          />
+          <Stack.Screen
+            name="PlaceSettings"
+            component={PlaceSettings}
+            options={{title: 'Ρυθμίσεις περιοχής'}}
+          />
+          <Stack.Screen
+            name="EditPlace"
+            component={EditPlace}
+            options={({navigation}) => ({
+              title: 'Μέρος',
+              headerRight: () => (
+                <PlaceSettingsButton
+                  title="Info"
+                  color="#fff"
+                  navigation={navigation}
+                />
+              ),
+            })}
           />
         </Stack.Navigator>
       </NavigationContainer>

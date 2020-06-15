@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import {
   Dimensions,
@@ -8,22 +9,22 @@ import {
   Image,
   TouchableOpacity,
   TouchableHighlight,
-} from 'react-native'
+} from 'react-native';
 const colors = {
-    backgroundLow: '#4caf5096',
-    backgroundMedium: '#03a9f45e',
-    backgroundHigh: '#f403035e',
-    textLow: 'green',
-    textMedium: '#03a9f4',
-    textHigh: '#f44336',
-  };
+  backgroundLow: '#4caf5096',
+  backgroundMedium: '#03a9f45e',
+  backgroundHigh: '#f403035e',
+  textLow: 'green',
+  textMedium: '#03a9f4',
+  textHigh: '#f44336',
+};
 
-const PplButton = (props)=>{
+const PplButton = props => {
   const population = props.population.toLowerCase();
 
-    return(
-      <>
-        <View
+  return (
+    <>
+      <View
         style={{
           backgroundColor:
             population === 'low'
@@ -35,27 +36,27 @@ const PplButton = (props)=>{
           borderRadius: 5,
           width: 60,
           justifyContent: 'center',
-          alignItems: 'center'
+          alignItems: 'center',
+        }}>
+        <Text
+          style={{
+            fontWeight: 'bold',
+            color:
+              population === 'low'
+                ? colors.textLow
+                : population === 'medium'
+                ? colors.textMedium
+                : colors.textHigh,
           }}>
-          <Text
-            style={{
-              fontWeight: 'bold',
-              color:
-               population === 'low'
-                  ? colors.textLow
-                  : population === 'medium'
-                  ? colors.textMedium
-                  : colors.textHigh,
-            }}>{population === 'low'
-              ? 'Λίγος'
-              : population === 'medium'
-              ? 'Μεσαίος'
-              : 'Πολύς'}
-          </Text>
-        </View>
-      </>
-      )
+          {population === 'low'
+            ? 'Λίγος'
+            : population === 'medium'
+            ? 'Μεσαίος'
+            : 'Πολύς'}
+        </Text>
+      </View>
+    </>
+  );
+};
 
-}
-
-export default PplButton
+export default PplButton;

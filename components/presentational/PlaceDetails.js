@@ -1,9 +1,11 @@
 /* eslint-disable react-native/no-inline-styles */
-import Config from "react-native-config";
+import Config from 'react-native-config';
 import React, {useState, useContext} from 'react';
+import ActionButton from 'react-native-action-button';
 import {Dimensions, View, Text, Image, TouchableOpacity} from 'react-native';
 import PplButton from './PplButton';
 import {SafeAreaView, StyleSheet, ScrollView} from 'react-native';
+import AntDesignIcons from 'react-native-vector-icons/Feather';
 import {UserContext} from '../Context';
 
 function PlaceDetails({navigation, route}) {
@@ -20,7 +22,7 @@ function PlaceDetails({navigation, route}) {
       profile: url + p.profile_image.url,
     };
     return (
-      <SafeAreaView>
+      <SafeAreaView style={{height: '100%'}}>
         <View>
           <Image
             source={{uri: images.thumbnail}}
@@ -107,6 +109,17 @@ function PlaceDetails({navigation, route}) {
             </ScrollView>
           </View>
         </View>
+        <ActionButton
+          buttonColor="#03a9f4"
+          onPress={() => navigation.navigate('EditPlace', {place: p})}
+          renderIcon={active =>
+            active ? (
+              <AntDesignIcons name="edit-2" size={26} color="white" />
+            ) : (
+              <AntDesignIcons name="edit-2" size={26} color="white" />
+            )
+          }
+        />
       </SafeAreaView>
     );
   } else {
