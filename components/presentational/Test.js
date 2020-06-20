@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   TouchableHighlight,
 } from 'react-native';
-import GetLocation from 'react-native-get-location'
+import GetLocation from 'react-native-get-location';
 import {SafeAreaView, StyleSheet, ScrollView, StatusBar} from 'react-native';
 import {Picker} from '@react-native-community/picker';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
@@ -51,29 +51,36 @@ function Test() {
   const [gloc, setGloc] = useState();
 
   async function getCity() {
-      try{
-        let response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${gloc.latitude},${gloc.longitude}&pretty=1&key=f38606b7c6c34f3fa99d1efbb5c92536&q`)
-        let data =await response.json();
-        console.log(data.results[0].components)
-      }catch(err){
-        console.warn(err);
-      }
+    try {
+      let response = await fetch(
+        `https://api.opencagedata.com/geocode/v1/json?q=${gloc.latitude},${
+          gloc.longitude
+        }&pretty=1&key=f38606b7c6c34f3fa99d1efbb5c92536&q`,
+      );
+      let data = await response.json();
+      console.log(data.results[0].components);
+    } catch (err) {
+      console.warn(err);
+    }
   }
 
   async function getLocation() {
-      let temp = await GetLocation.getCurrentPosition({enableHighAccuracy: true, timeout: 15000});
-      setGloc(temp);
+    let temp = await GetLocation.getCurrentPosition({
+      enableHighAccuracy: true,
+      timeout: 15000,
+    });
+    setGloc(temp);
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     getLocation();
-  },[]);
+  }, []);
 
-  useEffect(()=>{
-    if (gloc){
+  useEffect(() => {
+    if (gloc) {
       getCity();
     }
-  },[gloc])
+  }, [gloc]);
 
   return (
     <View
@@ -156,7 +163,6 @@ function Test() {
           Εφαρμογή
         </Text>
       </TouchableOpacity>
-
     </View>
   );
 }
