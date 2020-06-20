@@ -36,10 +36,12 @@ import Test from './components/presentational/Test';
 import SearchButton from './components/presentational/SearchButton';
 import PlaceSettingsButton from './components/presentational/PlaceSettingsButton';
 import Login from './components/presentational/Login';
+import UserPage from './components/presentational/UserPage';
 import User from './components/presentational/UserButton';
 import PlaceDetails from './components/presentational/PlaceDetails';
 import PlaceSettings from './components/presentational/PlaceSettings';
 import EditPlace from './components/presentational/EditPlace';
+import ApplicationPage from './components/presentational/ApplicationPage';
 //import Home from './components/presentational/Home';
 
 const Stack = createStackNavigator();
@@ -127,13 +129,18 @@ const App: () => React$Node = () => {
           />
           <Stack.Screen
             name="Login"
-            component={Login}
-            options={{title: 'Συνδέσου'}}
+            component={UserPage}
+            options={{title: 'Ο λογαριασμός μου'}}
           />
           <Stack.Screen
             name="PlaceSettings"
             component={PlaceSettings}
             options={{title: 'Ρυθμίσεις περιοχής'}}
+          />
+          <Stack.Screen
+            name="Application"
+            component={ApplicationPage}
+            options={{title: 'Δήλωση ενδιαφέροντος'}}
           />
           <Stack.Screen
             name="EditPlace"
