@@ -52,10 +52,12 @@ function PlaceDetails({navigation, route}) {
               </View>
             </View>
 
-            <View style={styles.ppl}>
-              <Text>Popolo</Text>
-              <PplButton population={p.last_assessment.assessment} />
-            </View>
+            {p.last_assessment ? (
+              <View style={styles.ppl}>
+                <Text>Popolo</Text>
+                <PplButton population={p.last_assessment.assessment} />
+              </View>
+            ) : null}
           </View>
           <View style={styles.desc}>
             <Text
@@ -87,25 +89,26 @@ function PlaceDetails({navigation, route}) {
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.list}>
-              {assesments.map(item => (
-                <View style={styles.ListItem} key={item.created_at}>
-                  {console.log(item)}
-                  <PplButton population={item.assessment} />
-                  <View
-                    style={{
-                      marginLeft: 75,
-                    }}>
-                    <Text>
-                      Created at:{' '}
-                      {item.created_at.substring(
-                        item.created_at.lastIndexOf('T') + 1,
-                        item.created_at.lastIndexOf('.'),
-                      )}
-                    </Text>
-                    <Text>Date: {item.created_at.split('T')[0]}</Text>
+              {assesments.length > 0 &&
+                assesments.map(item => (
+                  <View style={styles.ListItem} key={item.created_at}>
+                    {console.log(item)}
+                    <PplButton population={item.assessment} />
+                    <View
+                      style={{
+                        marginLeft: 75,
+                      }}>
+                      <Text>
+                        Created at:{' '}
+                        {item.created_at.substring(
+                          item.created_at.lastIndexOf('T') + 1,
+                          item.created_at.lastIndexOf('.'),
+                        )}
+                      </Text>
+                      <Text>Date: {item.created_at.split('T')[0]}</Text>
+                    </View>
                   </View>
-                </View>
-              ))}
+                ))}
             </ScrollView>
           </View>
         </View>

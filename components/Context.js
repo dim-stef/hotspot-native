@@ -5,3 +5,7 @@ export const UserContext = React.createContext({
   setAuth: () => {},
   data: {},
 });
+
+export const PlaceContext = React.createContext({
+  place: {},
+});

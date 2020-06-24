@@ -1,4 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
+import Config from 'react-native-config';
 import React, {useEffect, useState} from 'react';
 import {
   View,
@@ -44,11 +46,12 @@ const districts = [
   },
 ];
 
-function Test() {
+function Test({navigation}) {
   const [value, setValue] = useState('');
   const [city, setCity] = useState(cities[0].value);
   const [district, setDistrict] = useState(districts[0].value);
   const [gloc, setGloc] = useState();
+  const [results, setResults] = useState([]);
 
   async function getCity() {
     try {
@@ -72,6 +75,27 @@ function Test() {
     setGloc(temp);
   }
 
+  async function getSearchResults() {
+    try {
+      let response = await fetch(
+        Config.API_URL + `/places?name_contains=${value}`,
+      );
+      let data = await response.json();
+      console.log(data);
+      setResults(data);
+    } catch (err) {
+      console.warn(err);
+    }
+  }
+
+  function handleResultPress(place) {
+    navigation.navigate('PlaceDetails', {p: place});
+  }
+
+  useEffect(() => {
+    getSearchResults();
+  }, [value]);
+
   useEffect(() => {
     getLocation();
   }, []);
@@ -80,7 +104,7 @@ function Test() {
     if (gloc) {
       getCity();
     }
-  }, [gloc]);
+  }, [getCity, gloc]);
 
   return (
     <View
@@ -106,7 +130,31 @@ function Test() {
           value={value}
         />
       </View>
-      <Text
+      {results.map(p => {
+        return (
+          <TouchableOpacity
+            onPress={() => handleResultPress(p)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginLeft: 30,
+              marginRight: 30,
+              marginTop: 10,
+              paddingBottom: 10,
+              borderBottomColor: '#eaecef',
+              borderBottomWidth: 1,
+            }}>
+            <Image
+              source={{
+                uri: Config.API_URL + `${p.profile_image.url}`,
+              }}
+              style={{height: 30, width: 30}}
+            />
+            <Text style={{marginLeft: 30, fontSize: 16}}>{p.name}</Text>
+          </TouchableOpacity>
+        );
+      })}
+      {/*<Text
         style={{
           fontSize: 22,
           margin: 10,
@@ -144,25 +192,7 @@ function Test() {
             );
           })}
         </Picker>
-      </View>
-
-      <TouchableOpacity
-        activeOpacity={0.6}
-        underlayColor="#DDDDDD"
-        style={{
-          height: 40,
-          backgroundColor: '#03a9f4',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginTop: 30,
-          width: 150,
-          borderRadius: 100,
-          alignSelf: 'center',
-        }}>
-        <Text style={{fontSize: 16, fontWeight: 'bold', color: 'white'}}>
-          Εφαρμογή
-        </Text>
-      </TouchableOpacity>
+      </View>*/}
     </View>
   );
 }

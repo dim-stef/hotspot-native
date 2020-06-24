@@ -42,6 +42,7 @@ import PlaceDetails from './components/presentational/PlaceDetails';
 import PlaceSettings from './components/presentational/PlaceSettings';
 import EditPlace from './components/presentational/EditPlace';
 import ApplicationPage from './components/presentational/ApplicationPage';
+import Filters from './components/presentational/Filters';
 //import Home from './components/presentational/Home';
 
 const Stack = createStackNavigator();
@@ -69,6 +70,9 @@ const App: () => React$Node = () => {
         });
         const data = await response.json();
         console.log(data);
+        if (response.statusCode === 401) {
+          setAuth(null);
+        }
         setAuth(token);
       } catch (e) {
         try {
@@ -141,6 +145,11 @@ const App: () => React$Node = () => {
             name="Application"
             component={ApplicationPage}
             options={{title: 'Δήλωση ενδιαφέροντος'}}
+          />
+          <Stack.Screen
+            name="Filters"
+            component={Filters}
+            options={{title: 'Φίλτρα'}}
           />
           <Stack.Screen
             name="EditPlace"

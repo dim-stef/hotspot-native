@@ -35,6 +35,7 @@ function Login({navigation}) {
     });
 
     const content = await response.json();
+    console.log(content);
     loadingButton.showLoading(false);
 
     try {
