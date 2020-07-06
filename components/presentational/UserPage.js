@@ -23,31 +23,45 @@ function UserPage({navigation}) {
     <Login navigation={navigation} />
   );
 }
-//folder1
+
 function AuthenticatedUserPage({navigation}) {
+  const [loadingButton, setLoadingButton] = useState(null);
   const userContext = useContext(UserContext);
 
   function handleApplicationClick() {
     navigation.navigate('Application');
   }
 
+  function handleMyPlacesClick() {
+    navigation.navigate('MyPlaces');
+  }
+
+  function handleClick() {
+    userContext.setAuth(null);
+  }
+
   return (
     <View style={{padding: 10}}>
-      {/*<Text
-        style={{
-          fontSize: 20,
-          fontWeight: 'bold',
-          borderBottomWidth: 1,
-          paddingTop: 5,
-          paddingBottom: 5,
-        }}>
-        Οι πληροφορίες μου
-      </Text>*/}
-      <UserSetting title="Τα μέρη μου" icon="folder1" />
+      <UserSetting
+        title="Τα μέρη μου"
+        icon="folder1"
+        action={handleMyPlacesClick}
+      />
       <UserSetting
         title="Σου ανήκει μέρος;"
         icon="pluscircleo"
         action={handleApplicationClick}
+      />
+      <AnimateLoadingButton
+        ref={c => setLoadingButton(c)}
+        width={150}
+        height={50}
+        title="Αποσυνδέσου"
+        titleFontSize={16}
+        titleColor="rgb(255,255,255)"
+        backgroundColor="#0E86D4"
+        borderRadius={100}
+        onPress={handleClick}
       />
     </View>
   );

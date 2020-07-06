@@ -16,40 +16,8 @@ import {SafeAreaView, StyleSheet, ScrollView, StatusBar} from 'react-native';
 import {Picker} from '@react-native-community/picker';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
 
-const cities = [
-  {
-    value: 'Διάλεξε πόλη',
-  },
-  {
-    value: 'Αθήνα',
-  },
-  {
-    value: 'Θεσσαλονίκη',
-  },
-  {
-    value: 'Πάτρα',
-  },
-];
-
-const districts = [
-  {
-    value: 'Διάλεξε περιοχή',
-  },
-  {
-    value: 'Κηφισιά',
-  },
-  {
-    value: 'Ηράκλειο',
-  },
-  {
-    value: 'Μαρούσι',
-  },
-];
-
 function Test({navigation}) {
   const [value, setValue] = useState('');
-  const [city, setCity] = useState(cities[0].value);
-  const [district, setDistrict] = useState(districts[0].value);
   const [gloc, setGloc] = useState();
   const [results, setResults] = useState([]);
 
@@ -61,7 +29,6 @@ function Test({navigation}) {
         }&pretty=1&key=f38606b7c6c34f3fa99d1efbb5c92536&q`,
       );
       let data = await response.json();
-      console.log(data.results[0].components);
     } catch (err) {
       console.warn(err);
     }
@@ -81,7 +48,6 @@ function Test({navigation}) {
         Config.API_URL + `/places?name_contains=${value}`,
       );
       let data = await response.json();
-      console.log(data);
       setResults(data);
     } catch (err) {
       console.warn(err);
@@ -130,7 +96,7 @@ function Test({navigation}) {
           value={value}
         />
       </View>
-      {results.map(p => {
+      {results.map((p, i) => {
         return (
           <TouchableOpacity
             onPress={() => handleResultPress(p)}
@@ -142,57 +108,53 @@ function Test({navigation}) {
               marginTop: 10,
               paddingBottom: 10,
               borderBottomColor: '#eaecef',
-              borderBottomWidth: 1,
+              borderBottomWidth: results.length - 1 === i ? 0 : 1,
             }}>
-            <Image
-              source={{
-                uri: Config.API_URL + `${p.profile_image.url}`,
-              }}
-              style={{height: 30, width: 30}}
-            />
+            {p.profile_image ? (
+              <Image
+                source={{
+                  uri: Config.API_URL + `${p.profile_image.url}`,
+                }}
+                style={{
+                  height: 30,
+                  width: 30,
+                  borderRadius: 100,
+                  shadowColor: 'black',
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 3.84,
+                  elevation: 5,
+                }}
+              />
+            ) : (
+              <View
+                style={{
+                  height: 30,
+                  width: 30,
+                  borderRadius: 100,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  shadowColor: 'black',
+                  backgroundColor: '#f3f3f3',
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 3.84,
+                  elevation: 5,
+                }}>
+                <Text>{p.name.charAt(0).toUpperCase()}</Text>
+              </View>
+            )}
+
             <Text style={{marginLeft: 30, fontSize: 16}}>{p.name}</Text>
           </TouchableOpacity>
         );
       })}
-      {/*<Text
-        style={{
-          fontSize: 22,
-          margin: 10,
-          marginTop: 20,
-          alignSelf: 'flex-start',
-          fontWeight: '700',
-        }}>
-        Δεν ξέρεις τι θέλεις;
-      </Text>
-      <View style={{backgroundColor: '#ececec', borderRadius: 2}}>
-        <Picker
-          selectedValue={city}
-          style={{height: 50, width: '100%'}}
-          onValueChange={(itemValue, itemIndex) => {
-            setCity(itemValue);
-          }}>
-          {cities.map((item, i) => {
-            return (
-              <Picker.item key={i} label={item.value} value={item.value} />
-            );
-          })}
-        </Picker>
-      </View>
-      <View
-        style={{backgroundColor: '#ececec', borderRadius: 2, marginTop: 10}}>
-        <Picker
-          selectedValue={district}
-          style={{height: 50, width: '100%'}}
-          onValueChange={(itemValue, itemIndex) => {
-            setDistrict(itemValue);
-          }}>
-          {districts.map((item, i) => {
-            return (
-              <Picker.item key={i} label={item.value} value={item.value} />
-            );
-          })}
-        </Picker>
-      </View>*/}
     </View>
   );
 }

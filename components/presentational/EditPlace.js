@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
 import Config from 'react-native-config';
 import 'react-native-gesture-handler';
@@ -12,6 +13,9 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
+import {UserContext, PlaceContext} from '../Context';
+
 const colors = {
   backgroundLow: '#4caf5096',
   backgroundMedium: '#03a9f45e',
@@ -21,8 +25,48 @@ const colors = {
   textHigh: '#f44336',
 };
 
-function EditPlace() {
-  const [status, setStatus] = useState(null);
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function EditPlace({navigation, ...rest}) {
+  const [status, setStatus] = useState(
+    rest.route.params.place.last_assessment.assessment,
+  );
+  const [prevStatus, setPrevStatus] = useState(status);
+  async function postStatus() {
+    let token = null;
+    try {
+      token = await AsyncStorage.getItem('token');
+    } catch (e) {
+      // saving error
+    }
+    try {
+      let response = await fetch(`${Config.API_URL}/population-assessments/`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          assessment: status,
+          place: rest.route.params.place.id,
+        }),
+      });
+      let json = await response.json();
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  useEffect(() => {
+    //don't update status on mount
+    if (status !== prevStatus) {
+      postStatus();
+    }
+    setPrevStatus(status);
+  }, [status]);
 
   return (
     <SafeAreaView style={{flex: 1, margin: 20}}>
@@ -30,8 +74,8 @@ function EditPlace() {
         Ανανέωσε τον πληθυσμό
       </Text>
       <Text style={{marginTop: 10, marginBottom: 10}}>
-        Για την καλύτερη εμπειρία προτίνετε να ανανεώνεις τον πληθυσμό κάθε 1
-        ώρα ή όταν υπάρχει παρατηρείτε αλλαγή
+        Για την καλύτερη εμπειρία είναι καλό να ανανεώνεις τον πληθυσμό κάθε 1
+        ώρα ή όταν παρατηρείται αλλαγή
       </Text>
       <View
         style={{
@@ -40,11 +84,11 @@ function EditPlace() {
         }}>
         <StatusButton
           status={status}
-          value="low"
+          value="Low"
           label="Λίγος"
           backgroundColor={colors.backgroundLow}
           color={colors.textLow}
-          onPress={() => setStatus('low')}
+          onPress={() => setStatus('Low')}
           style={{
             borderTopLeftRadius: 10,
             borderBottomLeftRadius: 10,
@@ -54,20 +98,20 @@ function EditPlace() {
         />
         <StatusButton
           status={status}
-          value="medium"
+          value="Medium"
           label="Μεσαίος"
           backgroundColor={colors.backgroundMedium}
           color={colors.textMedium}
-          onPress={() => setStatus('medium')}
+          onPress={() => setStatus('Medium')}
           style={{borderRightColor: '#ececec', borderRightWidth: 1}}
         />
         <StatusButton
           status={status}
-          value="high"
+          value="High"
           label="Πολύς"
           backgroundColor={colors.backgroundHigh}
           color={colors.textHigh}
-          onPress={() => setStatus('high')}
+          onPress={() => setStatus('High')}
           style={{borderTopRightRadius: 10, borderBottomRightRadius: 10}}
         />
       </View>

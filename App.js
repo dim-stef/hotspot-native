@@ -43,6 +43,10 @@ import PlaceSettings from './components/presentational/PlaceSettings';
 import EditPlace from './components/presentational/EditPlace';
 import ApplicationPage from './components/presentational/ApplicationPage';
 import Filters from './components/presentational/Filters';
+import MyPlaces from './components/presentational/MyPlaces';
+import {YellowBox} from 'react-native';
+YellowBox.ignoreWarnings(['Warning: ReactNative.createElement']);
+console.disableYellowBox = true;
 //import Home from './components/presentational/Home';
 
 const Stack = createStackNavigator();
@@ -51,7 +55,7 @@ const Tab = createMaterialBottomTabNavigator();
 //<Ionicons name={iconName} size={size} color={color} />
 const App: () => React$Node = () => {
   const [isAuth, setAuth] = useState(null);
-
+  const [userData, setData] = useState(null);
   async function getUserData() {
     let token = null;
     try {
@@ -69,14 +73,13 @@ const App: () => React$Node = () => {
           },
         });
         const data = await response.json();
-        console.log(data);
+        setData(data);
         if (response.statusCode === 401) {
           setAuth(null);
         }
         setAuth(token);
       } catch (e) {
         try {
-          console.log('setting token', token);
           await AsyncStorage.setItem('token', null);
         } catch (e) {}
         setAuth(null);
@@ -86,10 +89,11 @@ const App: () => React$Node = () => {
 
   useEffect(() => {
     getUserData();
-  }, []);
+  }, [isAuth]);
 
   return (
-    <UserContext.Provider value={{isAuth: isAuth, setAuth: setAuth}}>
+    <UserContext.Provider
+      value={{isAuth: isAuth, setAuth: setAuth, user: userData}}>
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{
@@ -103,7 +107,7 @@ const App: () => React$Node = () => {
             name="Home"
             component={PlaceList}
             options={({navigation, route}) => ({
-              title: 'Αποτελέσματα',
+              title: 'Μέρη',
               headerRight: () => (
                 <SearchButton
                   title="Info"
@@ -112,12 +116,7 @@ const App: () => React$Node = () => {
                 />
               ),
               headerLeft: () => (
-                <User
-                  onPress={() => alert('This is a button!')}
-                  title="Info"
-                  color="#fff"
-                  navigation={navigation}
-                />
+                <User title="Info" color="#fff" navigation={navigation} />
               ),
             })}
           />
@@ -125,6 +124,11 @@ const App: () => React$Node = () => {
             name="Search"
             component={Test}
             options={{title: 'Που θες να πάς;'}}
+          />
+          <Stack.Screen
+            name="MyPlaces"
+            component={MyPlaces}
+            options={{title: 'Τα μέρη μου'}}
           />
           <Stack.Screen
             name="PlaceDetails"
@@ -156,13 +160,6 @@ const App: () => React$Node = () => {
             component={EditPlace}
             options={({navigation}) => ({
               title: 'Μέρος',
-              headerRight: () => (
-                <PlaceSettingsButton
-                  title="Info"
-                  color="#fff"
-                  navigation={navigation}
-                />
-              ),
             })}
           />
         </Stack.Navigator>

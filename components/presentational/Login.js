@@ -10,7 +10,6 @@ import {UserContext} from '../Context';
 function Login({navigation}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [loadingButton, setLoadingButton] = useState(null);
   const userContext = useContext(UserContext);
 
@@ -21,7 +20,6 @@ function Login({navigation}) {
   }
 
   async function handleLogin() {
-    console.log(email, password);
     let response = await fetch(Config.API_URL + '/auth/local/', {
       method: 'POST',
       headers: {
@@ -35,12 +33,11 @@ function Login({navigation}) {
     });
 
     const content = await response.json();
-    console.log(content);
     loadingButton.showLoading(false);
 
     try {
       let token = await AsyncStorage.setItem('token', content.jwt);
-      userContext.setAuth(token);
+      userContext.setAuth(content.jwt);
       navigation.navigate('Home');
     } catch (e) {
       // saving error

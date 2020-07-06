@@ -23,7 +23,6 @@ function PlaceSettings({navigation, ...rest}) {
         }&key=${Config.GOOGLE_API_KEY}`,
       );
       let json = await response.json();
-      console.log(json);
       createLocation(json.result);
       //return json.movies;
     } catch (error) {
@@ -35,7 +34,6 @@ function PlaceSettings({navigation, ...rest}) {
     let addressLocality = data.address_components.find(component =>
       component.types.includes('locality'),
     );
-    console.log('data', data, addressLocality);
     let token = null;
     try {
       token = await AsyncStorage.getItem('token');
@@ -53,6 +51,7 @@ function PlaceSettings({navigation, ...rest}) {
         short_name: addressLocality.short_name,
         latitude: data.geometry.location.lat,
         longitude: data.geometry.location.lng,
+        full_name: data.formatted_address,
       };
       placeContext.place = body;
 
@@ -61,8 +60,8 @@ function PlaceSettings({navigation, ...rest}) {
         rest.route.params.setPlace(body);
       } catch (e) {}
       placeContext.place.description = place.description;
-      try {
-        /*let response = await fetch(`${Config.API_URL}/locations/`, {
+      /*try {
+        let response = await fetch(`${Config.API_URL}/locations/`, {
           method: 'POST',
           headers: {
             Accept: 'application/json',
@@ -72,12 +71,10 @@ function PlaceSettings({navigation, ...rest}) {
           body: JSON.stringify(body),
         });
         let json = await response.json();
-        console.log(json);*/
       } catch (e) {
         console.log(e);
-      }
+      }*/
     } else {
-      console.log('iner', token);
     }
   }
 
@@ -141,7 +138,17 @@ function PlaceSettings({navigation, ...rest}) {
       </>
     );
   } else {
-    return <Text>Waiting bruh...</Text>;
+    return (
+      <View
+        style={{
+          height: '100%',
+          width: '100%',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <Text style={{fontWeight: 'bold', fontSize: 16}}>Loading map</Text>
+      </View>
+    );
   }
   async function getLocation() {
     try {
@@ -149,7 +156,6 @@ function PlaceSettings({navigation, ...rest}) {
         enableHighAccuracy: true,
         timeout: 15000,
       });
-      console.log(temp);
       setGeolocation(temp);
     } catch (err) {
       console.error(err.message);
