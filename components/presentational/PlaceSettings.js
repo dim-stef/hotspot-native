@@ -9,13 +9,16 @@ import React, {
 import Config from 'react-native-config';
 import {Text, View} from 'react-native';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
-import GetLocation from 'react-native-get-location';
 import AsyncStorage from '@react-native-community/async-storage';
 import MapView from 'react-native-maps';
 import {PlaceContext} from '../Context';
 
 function PlaceSettings({navigation, ...rest}) {
-  const [geolocation, setGeolocation] = useState();
+  const [mapref, setMapref] = useState();
+  const [geolocation, setGeolocation] = useState({
+    latitude: 37.97945,
+    longitude: 23.71622,
+  });
   const [place, setPlace] = useState(null);
   const [geometry, setGeometry] = useState({lat: 0, lng: 0});
   const placeContext = useContext(PlaceContext);
@@ -82,16 +85,24 @@ function PlaceSettings({navigation, ...rest}) {
     } else {
     }
   }
-
   useEffect(() => {
     if (place) {
       getPlaceDetails();
     }
   }, [place]);
 
-  useEffect(() => {
-    getLocation();
-  }, []);
+  const animateToRegion = () => {
+    mapref.animateToRegion(
+      {
+        latitude: geolocation.latitude,
+        longitude: geolocation.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      },
+      3,
+    );
+  };
+
   if (geolocation) {
     return (
       <>
@@ -123,18 +134,16 @@ function PlaceSettings({navigation, ...rest}) {
             />
           </View>
           <MapView
+            ref={ref => {
+              setMapref(ref);
+            }}
+            onMapReady={animateToRegion}
             style={{width: '100%', height: '100%'}}
             showsUserLocation={true}
             showCompass={true}
             region={{
               latitude: geometry.lat,
               longitude: geometry.lng,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
-            initialRegion={{
-              latitude: 37.78825,
-              longitude: -122.4324,
               latitudeDelta: 0.0922,
               longitudeDelta: 0.0421,
             }}
@@ -154,24 +163,6 @@ function PlaceSettings({navigation, ...rest}) {
         <Text style={{fontWeight: 'bold', fontSize: 16}}>Loading map</Text>
       </View>
     );
-  }
-  async function getLocation() {
-    let granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      {
-        title: 'GIMME UR LOCATION NIBBA',
-        message: 'I would like to know wher u sleep in order to kill u',
-      },
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      let temp = await GetLocation.getCurrentPosition({
-        enableHighAccuracy: true,
-        timeout: 15000,
-      });
-      setGeolocation(temp);
-    } else {
-      console.log('Permmision Denied');
-    }
   }
 }
 
