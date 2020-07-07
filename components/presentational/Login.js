@@ -55,20 +55,12 @@ function Login({navigation}) {
       }}>
       <View style={{marginTop: 80, marginBottom: 30, alignItems: 'center'}}>
         <Image
-          source={{
-            uri: 'https://westeria.app/static/android-chrome-192x192.png',
-          }}
-          style={{height: 100, width: 100}}
+          source={require('../images/logo.png')}
+          style={{resizeMode: 'contain', width: 100, height: 100}}
         />
-        <Text style={{fontWeight: 'bold', fontSize: 20}}>Tsekit</Text>
+        <Text style={{fontWeight: 'bold', fontSize: 20}}>Hotspot</Text>
       </View>
       <InputWrapper name="Email">
-        {/*<AntDesignIcons
-          name="user"
-          size={16}
-          color="#c7c7c7"
-          style={{paddingLeft: 10}}
-        />*/}
         <TextInput
           autoCompleteType="email"
           onChangeText={value => setEmail(value)}
@@ -76,13 +68,7 @@ function Login({navigation}) {
           placeholder="Βάλε email"
         />
       </InputWrapper>
-      <InputWrapper name="Email">
-        {/*<AntDesignIcons
-          name="password"
-          size={16}
-          color="#c7c7c7"
-          style={{paddingLeft: 10}}
-        />*/}
+      <InputWrapper name="Password">
         <TextInput
           secureTextEntry={true}
           onChangeText={value => setPassword(value)}
@@ -92,6 +78,112 @@ function Login({navigation}) {
       </InputWrapper>
       <AnimateLoadingButton
         ref={c => setLoadingButton(c)}
+        width={200}
+        height={50}
+        title="Συνδέσου"
+        titleFontSize={16}
+        titleColor="rgb(255,255,255)"
+        backgroundColor="#0E86D4"
+        borderRadius={5}
+        onPress={handleClick}
+      />
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Register')}
+        style={{margin: 20, justifyContent: 'center', alignItems: 'center'}}>
+        <Text>Δεν έχεις λογαριασμό;</Text>
+        <Text style={{color: '#0645AD', fontWeight: 'bold'}}>
+          Δημιούργησε τώρα
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+export function Register({navigation}) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loadingButton, setLoadingButton] = useState(null);
+  const userContext = useContext(UserContext);
+
+  function handleClick() {
+    loadingButton.showLoading(true);
+
+    handleLogin();
+  }
+
+  async function handleLogin() {
+    let response = await fetch(Config.API_URL + '/auth/local/register', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: null,
+        email: email,
+        password: password,
+      }),
+    });
+
+    const content = await response.json();
+    console.log(content);
+    loadingButton.showLoading(false);
+
+    try {
+      let token = await AsyncStorage.setItem('token', content.jwt);
+      userContext.setAuth(content.jwt);
+      navigation.navigate('Home');
+    } catch (e) {
+      // saving error
+    }
+  }
+
+  return userContext.isAuth ? (
+    <Logout navigation={navigation} />
+  ) : (
+    <View
+      style={{
+        height: '100%',
+        margin: 20,
+        alignItems: 'center',
+      }}>
+      <View style={{marginTop: 80, marginBottom: 30, alignItems: 'center'}}>
+        <Image
+          source={require('../images/logo.png')}
+          style={{height: 100, width: 100, resizeMode: 'contain'}}
+        />
+        <Text style={{fontWeight: 'bold', fontSize: 20}}>Hotspot</Text>
+      </View>
+      <InputWrapper name="Email">
+        <TextInput
+          autoCompleteType="email"
+          onChangeText={value => setEmail(value)}
+          style={{paddingLeft: 10, width: '80%'}}
+          placeholder="Βάλε email"
+        />
+      </InputWrapper>
+      <InputWrapper name="Password">
+        <TextInput
+          secureTextEntry={true}
+          onChangeText={value => setPassword(value)}
+          style={{paddingLeft: 10, width: '80%'}}
+          placeholder="Βάλε κωδικό"
+        />
+      </InputWrapper>
+      <InputWrapper name="Confirm Password">
+        <TextInput
+          secureTextEntry={true}
+          onChangeText={value => setConfirmPassword(value)}
+          style={{paddingLeft: 10, width: '80%'}}
+          placeholder="Βάλε κωδικό ξανά"
+        />
+      </InputWrapper>
+      {password !== confirmPassword ? (
+        <Error error="Οι κωδικοί δεν ταιριάζουν" />
+      ) : null}
+      <AnimateLoadingButton
+        ref={c => setLoadingButton(c)}
         width={100}
         height={50}
         title="Συνδέσου"
@@ -99,8 +191,25 @@ function Login({navigation}) {
         titleColor="rgb(255,255,255)"
         backgroundColor="#0E86D4"
         borderRadius={100}
-        onPress={handleClick}
+        onPress={password !== confirmPassword ? () => {} : () => handleClick()}
       />
+    </View>
+  );
+}
+
+function Error({error}) {
+  return (
+    <View
+      style={{
+        backgroundColor: '#ed4337',
+        padding: 10,
+        margin: 10,
+        minWidth: 200,
+        borderRadius: 2,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+      <Text style={{color: 'white'}}>{error}</Text>
     </View>
   );
 }
@@ -116,7 +225,12 @@ function Logout({navigation}) {
     handleLogout();
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    try {
+      await AsyncStorage.setItem('token', null);
+    } catch (e) {
+      // saving error
+    }
     userContext.setAuth(null);
     navigation.navigate('Home');
   }

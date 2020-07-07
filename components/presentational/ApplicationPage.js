@@ -449,7 +449,7 @@ function ApplicationForm({navigation}) {
               ref={c => setLoadingButton(c)}
               width={200}
               height={50}
-              title="ΥΠΟΒΟΛΗ ΔΗΛΩΣΗΣ"
+              title="Υποβολή δήλωσης"
               titleFontSize={16}
               titleColor="rgb(255,255,255)"
               backgroundColor="#0E86D4"

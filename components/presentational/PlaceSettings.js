@@ -1,6 +1,11 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useState, useEffect, useContext} from 'react';
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  PermissionsAndroid,
+} from 'react';
 import Config from 'react-native-config';
 import {Text, View} from 'react-native';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
@@ -151,14 +156,21 @@ function PlaceSettings({navigation, ...rest}) {
     );
   }
   async function getLocation() {
-    try {
+    let granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      {
+        title: 'GIMME UR LOCATION NIBBA',
+        message: 'I would like to know wher u sleep in order to kill u',
+      },
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
       let temp = await GetLocation.getCurrentPosition({
         enableHighAccuracy: true,
         timeout: 15000,
       });
       setGeolocation(temp);
-    } catch (err) {
-      console.error(err.message);
+    } else {
+      console.log('Permmision Denied');
     }
   }
 }

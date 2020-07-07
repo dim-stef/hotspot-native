@@ -35,7 +35,7 @@ import PlaceList from './components/presentational/PlaceList';
 import Test from './components/presentational/Test';
 import SearchButton from './components/presentational/SearchButton';
 import PlaceSettingsButton from './components/presentational/PlaceSettingsButton';
-import Login from './components/presentational/Login';
+import Login, {Register} from './components/presentational/Login';
 import UserPage from './components/presentational/UserPage';
 import User from './components/presentational/UserButton';
 import PlaceDetails from './components/presentational/PlaceDetails';
@@ -57,6 +57,7 @@ const App: () => React$Node = () => {
   const [isAuth, setAuth] = useState(null);
   const [userData, setData] = useState(null);
   async function getUserData() {
+    
     let token = null;
     try {
       token = await AsyncStorage.getItem('token');
@@ -138,6 +139,11 @@ const App: () => React$Node = () => {
           <Stack.Screen
             name="Login"
             component={UserPage}
+            options={{title: 'Ο λογαριασμός μου'}}
+          />
+          <Stack.Screen
+            name="Register"
+            component={Register}
             options={{title: 'Ο λογαριασμός μου'}}
           />
           <Stack.Screen

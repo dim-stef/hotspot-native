@@ -17,6 +17,7 @@ import Login from './Login';
 
 function UserPage({navigation}) {
   const userContext = useContext(UserContext);
+  console.log(userContext.isAuth);
   return userContext.isAuth ? (
     <AuthenticatedUserPage navigation={navigation} />
   ) : (
@@ -36,7 +37,13 @@ function AuthenticatedUserPage({navigation}) {
     navigation.navigate('MyPlaces');
   }
 
-  function handleClick() {
+  async function handleClick() {
+    try {
+      await AsyncStorage.removeItem('token');
+    } catch (e) {
+      console.log(e)
+      // saving error
+    }
     userContext.setAuth(null);
   }
 

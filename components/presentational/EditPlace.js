@@ -31,7 +31,9 @@ function capitalizeFirstLetter(string) {
 
 function EditPlace({navigation, ...rest}) {
   const [status, setStatus] = useState(
-    rest.route.params.place.last_assessment.assessment,
+    rest.route.params.place.last_assessment
+      ? rest.route.params.place.last_assessment.assessment
+      : null,
   );
   const [prevStatus, setPrevStatus] = useState(status);
   async function postStatus() {
