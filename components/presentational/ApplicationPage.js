@@ -52,6 +52,7 @@ function ApplicationForm({navigation}) {
   const [documents, setDocuments] = useState([]);
   const [placeImage, setPlaceImage] = useState(null);
   const [placeDescription, setPlaceDescription] = useState('');
+  const [description, setDescription] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
   const [loadingButton, setLoadingButton] = useState(null);
 
@@ -348,7 +349,7 @@ function ApplicationForm({navigation}) {
         />
         <MaterialTextField
           label="Περιέγραψε το μέρος (προαιρετικό)"
-          onChangeText={text => setPlaceDescription(text)}
+          onChangeText={text => setDescription(text)}
           multiline
           characterRestriction={140}
         />

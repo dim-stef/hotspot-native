@@ -59,7 +59,7 @@ function MyPlaces({navigation}) {
     try {
       let uri =
         Config.API_URL +
-        `/applications?user.id=${userContext.user.id}&confirmed=false`;
+        `/applications?user.id=${userContext.user.id}&confirmed_null=true`;
       let response = await fetch(uri, {
         method: 'GET',
         headers: {
@@ -157,7 +157,7 @@ function ApplicationItem({application}) {
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-          <Text>{application.name.charAt(0).toUpperCase()}</Text>
+          <Text>{application.place_name.charAt(0).toUpperCase()}</Text>
         </View>
       )}
       <View>

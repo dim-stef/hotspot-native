@@ -20,7 +20,7 @@ function PlaceSettings({navigation, ...rest}) {
     longitude: 23.71622,
   });
   const [place, setPlace] = useState(null);
-  const [geometry, setGeometry] = useState({lat: 0, lng: 0});
+  const [geometry, setGeometry] = useState({lat: 37.97945, lng: 23.71622});
   const placeContext = useContext(PlaceContext);
 
   async function getPlaceDetails() {
