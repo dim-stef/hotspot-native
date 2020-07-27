@@ -7,18 +7,17 @@ import React, {
   PermissionsAndroid,
 } from 'react';
 import Config from 'react-native-config';
-import {Text, View} from 'react-native';
+import {Text, View, Navigator} from 'react-native';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 import AsyncStorage from '@react-native-community/async-storage';
 import MapView from 'react-native-maps';
 import {PlaceContext} from '../Context';
+import Geolocation from '@react-native-community/geolocation';
 
 function PlaceSettings({navigation, ...rest}) {
+  Geolocation.setRNConfiguration();
   const [mapref, setMapref] = useState();
-  const [geolocation, setGeolocation] = useState({
-    latitude: 37.97945,
-    longitude: 23.71622,
-  });
+  const [geolocation, setGeolocation] = useState(undefined);
   const [place, setPlace] = useState(null);
   const [geometry, setGeometry] = useState({lat: 0, lng: 0});
   const placeContext = useContext(PlaceContext);
@@ -86,24 +85,25 @@ function PlaceSettings({navigation, ...rest}) {
     }
   }
   useEffect(() => {
+    Geolocation.getCurrentPosition(info => setGeolocation({latitude: info.coords.latitude,longitude:info.coords.longitude}));
     if (place) {
       getPlaceDetails();
     }
   }, [place]);
 
-  const animateToRegion = () => {
-    mapref.animateToRegion(
-      {
-        latitude: geolocation.latitude,
-        longitude: geolocation.longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      },
-      3,
-    );
-  };
-
   if (geolocation) {
+    const animateToRegion = () => {
+      mapref.animateToRegion(
+        {
+          latitude: geolocation.latitude,
+          longitude: geolocation.longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        },
+        5,
+      );
+    };
+  
     return (
       <>
         <View style={{flexDirection: 'column'}}>
