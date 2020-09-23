@@ -1,24 +1,24 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
 import Config from 'react-native-config';
-import React, {useEffect, useState} from 'react';
-import {View, Text, Image, TouchableOpacity} from 'react-native';
+import React, {useEffect, useState, useRef, useContext} from 'react';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+  StyleSheet,
+  TouchableNativeFeedback,
+} from 'react-native';
 import {SafeAreaView, ScrollView, StatusBar, FlatList} from 'react-native';
+import {FAB} from 'react-native-paper';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
 import PplButton from './PplButton';
+import WaitTime from './WaitTime';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import useTranslations from '../hooks/useTranslations';
-
-const specificType = [
-  {
-    gr: 'Εστιατόριο',
-    en: 'restaurant',
-  },
-  {
-    gr: 'Καφετέρια',
-    en: 'cafeteria',
-  },
-];
+import {UserContext} from '../Context';
 
 const initFilters = {
   place_type: {
@@ -29,9 +29,20 @@ const initFilters = {
     param: 'location.short_name',
     value: null,
   },
+  population: {
+    param: 'population_contains',
+    value: null,
+  },
 };
 
-function buildQuery(baseUri, params) {
+function areFiltersEmpty(filters) {
+  Object.keys(filters).every(k => {
+    return filters[k].value === null;
+  });
+}
+
+function buildQuery(baseUri, params, extra = {}) {
+  params = {...params, ...extra};
   if (params) {
     var esc = encodeURIComponent;
     var query = Object.keys(params)
@@ -44,18 +55,36 @@ function buildQuery(baseUri, params) {
   return baseUri;
 }
 
-const ViewBoxesWithColorAndText = ({navigation, filters, setFilters}) => {
+const PlaceList = ({navigation, filters, setFilters}) => {
+  const limit = 5;
+  const start = useRef(0);
   const [places, setPlaces] = useState(null);
   const [translations, setTranslations] = useState([]);
+  //const [start, setStart] = useState(0);
   const [_, getTranslatedType, getTypeValueFromTranslation] = useTranslations();
 
   async function getPlaces() {
     try {
-      let uri = buildQuery(Config.API_URL + '/places', filters);
+      let uri = buildQuery(Config.API_URL + '/places', filters, {
+        start: {
+          param: '_start',
+          value: start.current,
+        },
+        limit: {
+          param: '_limit',
+          value: limit,
+        },
+      });
       let response = await fetch(uri);
       let json = await response.json();
-      setPlaces(json);
-    } catch (e) {}
+      if (start.current != 0) {
+        setPlaces([...places, ...json]);
+      } else {
+        setPlaces(json);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   async function getTranslations() {
@@ -66,8 +95,9 @@ const ViewBoxesWithColorAndText = ({navigation, filters, setFilters}) => {
     } catch (e) {}
   }
 
-  function handlePress(place) {
-    navigation.navigate('PlaceDetails', {p: place});
+  function loadData() {
+    start.current = start.current + limit;
+    getPlaces();
   }
 
   useEffect(() => {
@@ -76,18 +106,20 @@ const ViewBoxesWithColorAndText = ({navigation, filters, setFilters}) => {
   }, []);
 
   useEffect(() => {
+    start.current = 0;
     getPlaces();
   }, [filters]);
 
-  return places === null ? (
+  return places == null ? (
     <ScrollView contentInsetAdjustmentBehavior="automatic">
       {[...Array(10)].map((a, i) => {
         return <Skeleton />;
       })}
     </ScrollView>
   ) : (
-    <>
+    <View style={{height: '100%', width: '100%', justifyContent: 'center'}}>
       <FlatList
+        onEndReached={loadData}
         data={places}
         renderItem={({item}) => (
           <ListItem
@@ -98,13 +130,19 @@ const ViewBoxesWithColorAndText = ({navigation, filters, setFilters}) => {
         )}
         keyExtractor={item => item.id}
       />
-    </>
+    </View>
   );
 };
 
-export function ListItem({navigation, getTranslatedType, p}) {
+export function ListItem({navigation, getTranslatedType, p, instant = false}) {
   function handlePress() {
-    navigation.navigate('PlaceDetails', {p: p});
+    if (instant) {
+      // instantly go to place settings
+      // this is used to save time for the place owner
+      navigation.navigate('EditPlace', {place: p});
+    } else {
+      navigation.navigate('PlaceDetails', {p: p});
+    }
   }
 
   return (
@@ -113,7 +151,7 @@ export function ListItem({navigation, getTranslatedType, p}) {
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        height: 100,
+        height: 120,
         maxWidth: '100%',
         padding: 20,
         backgroundColor: 'white',
@@ -128,11 +166,12 @@ export function ListItem({navigation, getTranslatedType, p}) {
         shadowRadius: 3.84,
         elevation: 5,
       }}>
-      <View style={{height: '100%', flexBasis: '20%'}}>
+      <View
+        style={{height: '100%', flexBasis: '20%', justifyContent: 'center'}}>
         {p.profile_image ? (
           <Image
             source={{
-              uri: Config.API_URL + `${p.profile_image.url}`,
+              uri: Config.DOMAIN_URL + `${p.profile_image.url}`,
             }}
             style={{
               height: 60,
@@ -162,55 +201,40 @@ export function ListItem({navigation, getTranslatedType, p}) {
           style={{fontSize: 16, fontWeight: 'bold'}}>
           {p.name}
         </Text>
-        <Text style={{fontSize: 14}}>{getTranslatedType(p.place_type)}</Text>
+        {getTranslatedType(p.place_type) ? (
+          <Text style={{fontSize: 14}}>{getTranslatedType(p.place_type)}</Text>
+        ) : null}
+
         {p.last_assessment ? (
           <Text style={{fontSize: 12, color: 'gray'}}>
-            Τελ. ενημερωση πριν{' '}
+            Τελ. ενημέρωση πριν{' '}
             {timeSince(new Date(p.last_assessment.created_at))}
           </Text>
         ) : null}
       </View>
       {p.last_assessment ? (
         <View style={{flexGrow: 1, marginLeft: 10, alignItems: 'center'}}>
-          <Text style={{fontSize: 12, color: 'gray'}}>Κοσμος</Text>
+          <Text style={{fontSize: 12, color: 'gray'}}>Κόσμος</Text>
           <PplButton population={p.last_assessment.assessment} />
+          {p.estimated_wait_time !== 0 && p.estimated_wait_time !== null ? (
+            <WaitTime waitTime={p.estimated_wait_time} />
+          ) : null}
         </View>
       ) : null}
     </TouchableOpacity>
   );
 }
 
-function Search({navigation}) {
-  return (
-    <TouchableOpacity
-      onPress={() => navigation.navigate('Search')}
-      style={{
-        padding: 10,
-        position: 'absolute',
-        bottom: 30,
-        right: 10,
-        backgroundColor: 'white',
-        borderRadius: 100,
-        margin: 10,
-        shadowColor: 'black',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-      }}>
-      <AntDesignIcons name="search1" size={26} color="black" />
-    </TouchableOpacity>
-  );
-}
-
 const Wrapper = ({navigation}) => {
   const [filters, setFilters] = useState(initFilters);
+  const userContext = useContext(UserContext);
 
   function handleFilterPress() {
     navigation.navigate('Filters', {filters: filters, setFilters: setFilters});
+  }
+
+  function handleGoToPlacesPress() {
+    navigation.navigate('MyPlaces', {instant: true});
   }
 
   function filtersActive() {
@@ -220,8 +244,8 @@ const Wrapper = ({navigation}) => {
   return (
     <>
       <StatusBar barStyle="dark-content" />
-      <SafeAreaView style={{height: '100%'}}>
-        <ViewBoxesWithColorAndText
+      <View style={{height: '100%'}}>
+        <PlaceList
           navigation={navigation}
           filters={filters}
           setFilters={setFilters}
@@ -235,15 +259,10 @@ const Wrapper = ({navigation}) => {
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-          <TouchableOpacity
-            onPress={handleFilterPress}
+          <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-              padding: 15,
-              backgroundColor: filtersActive() ? '#1bc4f2' : 'white',
               borderRadius: 100,
+              overflow: 'hidden',
               shadowColor: 'black',
               shadowOffset: {
                 width: 0,
@@ -253,21 +272,41 @@ const Wrapper = ({navigation}) => {
               shadowRadius: 3.84,
               elevation: 5,
             }}>
-            <AntDesignIcons
-              name="filter"
-              size={16}
-              color={filtersActive() ? 'white' : 'black'}
-            />
-            <Text
-              style={{
-                marginLeft: 5,
-                color: filtersActive() ? 'white' : 'black',
-              }}>
-              Φίλτρα
-            </Text>
-          </TouchableOpacity>
+            <TouchableNativeFeedback onPress={handleFilterPress}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: 18,
+                  backgroundColor: filtersActive() ? '#1bc4f2' : 'white',
+                  borderRadius: 100,
+                }}>
+                <AntDesignIcons
+                  name="filter"
+                  size={16}
+                  color={filtersActive() ? 'white' : 'black'}
+                />
+                <Text
+                  style={{
+                    marginLeft: 5,
+                    color: filtersActive() ? 'white' : 'black',
+                  }}>
+                  Φίλτρα
+                </Text>
+              </View>
+            </TouchableNativeFeedback>
+          </View>
         </View>
-      </SafeAreaView>
+        {userContext.isAuth ? (
+          <FAB
+            style={styles.fab}
+            icon="pencil-outline"
+            color="white"
+            onPress={handleGoToPlacesPress}
+          />
+        ) : null}
+      </View>
     </>
   );
 };
@@ -316,5 +355,15 @@ function timeSince(date) {
   }
   return Math.floor(seconds) + ' δευτ.';
 }
+
+const styles = StyleSheet.create({
+  fab: {
+    backgroundColor: '#1bc4f2',
+    position: 'absolute',
+    margin: 30,
+    right: 0,
+    bottom: 0,
+  },
+});
 
 export default Wrapper;

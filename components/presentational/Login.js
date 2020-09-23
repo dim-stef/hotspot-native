@@ -5,12 +5,14 @@ import {View, Text, TextInput, Image, TouchableOpacity} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
 import AnimateLoadingButton from 'react-native-animate-loading-button';
+import ErrorText from './ErrorText';
 import {UserContext} from '../Context';
 
 function Login({navigation}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loadingButton, setLoadingButton] = useState(null);
+  const [error, setError] = useState(false);
   const userContext = useContext(UserContext);
 
   function handleClick() {
@@ -20,7 +22,7 @@ function Login({navigation}) {
   }
 
   async function handleLogin() {
-    let response = await fetch(Config.API_URL + '/auth/local/', {
+    let response = await fetch(Config.DOMAIN_URL + '/auth/local/', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -33,6 +35,10 @@ function Login({navigation}) {
     });
 
     const content = await response.json();
+    console.log(content);
+    if (content.statusCode === 400) {
+      setError(true);
+    }
     loadingButton.showLoading(false);
 
     try {
@@ -56,12 +62,19 @@ function Login({navigation}) {
       <View style={{marginTop: 80, marginBottom: 30, alignItems: 'center'}}>
         <Image
           source={require('../images/logo.png')}
-          style={{resizeMode: 'contain', width: 100, height: 100}}
+          style={{
+            resizeMode: 'contain',
+            width: 100,
+            height: 100,
+            borderRadius: 200,
+          }}
         />
         <Text style={{fontWeight: 'bold', fontSize: 20}}>Hotspot</Text>
       </View>
       <InputWrapper name="Email">
         <TextInput
+          keyboardType="email-address"
+          textContentType="emailAddress"
           autoCompleteType="email"
           onChangeText={value => setEmail(value)}
           style={{paddingLeft: 10, width: '80%'}}
@@ -76,6 +89,7 @@ function Login({navigation}) {
           placeholder="Βάλε κωδικό"
         />
       </InputWrapper>
+      {error ? <Error error="Το email ή το password είναι λάθος" /> : null}
       <AnimateLoadingButton
         ref={c => setLoadingButton(c)}
         width={200}
@@ -104,16 +118,16 @@ export function Register({navigation}) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loadingButton, setLoadingButton] = useState(null);
+  const [error, setError] = useState(false);
   const userContext = useContext(UserContext);
 
   function handleClick() {
     loadingButton.showLoading(true);
-
     handleLogin();
   }
 
   async function handleLogin() {
-    let response = await fetch(Config.API_URL + '/auth/local/register', {
+    let response = await fetch(Config.DOMAIN_URL + '/auth/local/register', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -127,9 +141,11 @@ export function Register({navigation}) {
     });
 
     const content = await response.json();
-    console.log(content);
     loadingButton.showLoading(false);
 
+    if (content.statusCode === 400) {
+      setError(true);
+    }
     try {
       let token = await AsyncStorage.setItem('token', content.jwt);
       userContext.setAuth(content.jwt);
@@ -151,12 +167,19 @@ export function Register({navigation}) {
       <View style={{marginTop: 80, marginBottom: 30, alignItems: 'center'}}>
         <Image
           source={require('../images/logo.png')}
-          style={{height: 100, width: 100, resizeMode: 'contain'}}
+          style={{
+            height: 100,
+            width: 100,
+            resizeMode: 'contain',
+            borderRadius: 200,
+          }}
         />
         <Text style={{fontWeight: 'bold', fontSize: 20}}>Hotspot</Text>
       </View>
       <InputWrapper name="Email">
         <TextInput
+          keyboardType="email-address"
+          textContentType="emailAddress"
           autoCompleteType="email"
           onChangeText={value => setEmail(value)}
           style={{paddingLeft: 10, width: '80%'}}
@@ -182,15 +205,16 @@ export function Register({navigation}) {
       {password !== confirmPassword ? (
         <Error error="Οι κωδικοί δεν ταιριάζουν" />
       ) : null}
+      {error ? <Error error="Το email δεν είναι διαθέσιμο" /> : null}
       <AnimateLoadingButton
         ref={c => setLoadingButton(c)}
-        width={100}
+        width={200}
         height={50}
         title="Συνδέσου"
         titleFontSize={16}
         titleColor="rgb(255,255,255)"
         backgroundColor="#0E86D4"
-        borderRadius={100}
+        borderRadius={5}
         onPress={password !== confirmPassword ? () => {} : () => handleClick()}
       />
     </View>

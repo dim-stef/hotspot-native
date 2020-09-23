@@ -57,7 +57,6 @@ const App: () => React$Node = () => {
   const [isAuth, setAuth] = useState(null);
   const [userData, setData] = useState(null);
   async function getUserData() {
-    
     let token = null;
     try {
       token = await AsyncStorage.getItem('token');
@@ -66,7 +65,7 @@ const App: () => React$Node = () => {
     }
     if (token) {
       try {
-        let response = await fetch(Config.API_URL + '/users/me', {
+        let response = await fetch(Config.DOMAIN_URL + '/users/me', {
           method: 'GET',
           headers: {
             Authorization: 'Bearer ' + token,

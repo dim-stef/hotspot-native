@@ -19,7 +19,8 @@ import {ListItem} from './PlaceList';
 import SkeletonPlaceList from './SkeletonPlaceList';
 import useTranslations from '../hooks/useTranslations';
 
-function MyPlaces({navigation}) {
+function MyPlaces({navigation, route}) {
+  const {instant} = route.params;
   const [translation, getTranslatedType] = useTranslations();
   const [places, setPlaces] = useState(null);
   const [applications, setApplications] = useState(null);
@@ -98,6 +99,7 @@ function MyPlaces({navigation}) {
           data={places}
           renderItem={({item}) => (
             <ListItem
+              instant={instant}
               p={item}
               navigation={navigation}
               getTranslatedType={getTranslatedType}
@@ -108,7 +110,7 @@ function MyPlaces({navigation}) {
       )}
 
       <Text style={{fontSize: 20, margin: 10, fontWeight: 'bold'}}>
-        Σε αναμονή για επιβεβαιωμέωση
+        Σε αναμονή για επιβεβαίωση
       </Text>
       {!applications ? (
         <SkeletonPlaceList count={3} />
@@ -145,7 +147,7 @@ function ApplicationItem({application}) {
       }}>
       {application.place_avatar ? (
         <Image
-          source={{uri: Config.API_URL + application.place_avatar.url}}
+          source={{uri: Config.DOMAIN_URL + application.place_avatar.url}}
           style={{height: 60, width: 60, borderRadius: 100}}
         />
       ) : (

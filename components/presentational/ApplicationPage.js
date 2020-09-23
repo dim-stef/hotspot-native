@@ -12,6 +12,7 @@ import {
   ScrollView,
   SafeAreaView,
   Dimensions,
+  Platform,
 } from 'react-native';
 import {
   TextField,
@@ -25,6 +26,8 @@ import Modal from 'react-native-modal';
 import {UserContext, PlaceContext} from '../Context';
 import Login from './Login';
 import DocumentPicker from 'react-native-document-picker';
+import ImagePicker from 'react-native-image-picker';
+const RNFS = require('react-native-fs');
 
 let mapError = 'Πρέπει να διαλέξεις περιοχή';
 let shouldNotBeEmptyError = 'Υποχρεωτικό πεδίο';
@@ -36,6 +39,15 @@ function removeAllElements(array, elem) {
     index = array.indexOf(elem);
   }
 }
+
+const options = {
+  title: 'Select Avatar',
+  customButtons: [{name: 'photo', title: 'Choose a Photo'}],
+  storageOptions: {
+    skipBackup: true,
+    path: 'images',
+  },
+};
 
 function ApplicationForm({navigation}) {
   const dimensions = Dimensions.get('window');
@@ -87,6 +99,21 @@ function ApplicationForm({navigation}) {
     }
   }
 
+  async function pickProfileImage2() {
+    ImagePicker.launchImageLibrary(options, response => {
+      if (response.didCancel) {
+      } else if (response.error) {
+      } else if (response.customButton) {
+      } else {
+        const source = {uri: response.uri};
+        // You can also display the image using data:
+        // const source = { uri: 'data:image/jpeg;base64,' + response.data };
+
+        setPlaceImage(response);
+      }
+    });
+  }
+
   async function getDocuments() {
     try {
       const results = await DocumentPicker.pickMultiple({
@@ -127,12 +154,11 @@ function ApplicationForm({navigation}) {
       });
       let json = await response.json();
       if (json.id) {
-        toggleModal();
+        //toggleModal();
         loadingButton.showLoading(false);
       }
     } catch (e) {
       loadingButton.showLoading(false);
-      console.log(e);
     }
   }
 
@@ -155,9 +181,7 @@ function ApplicationForm({navigation}) {
       });
       let json = await response.json();
       return json.id;
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     return null;
   }
   function handleSubmit() {
@@ -170,7 +194,7 @@ function ApplicationForm({navigation}) {
 
   function handleModalClose() {
     toggleModal();
-    //navigation.navigate('Home');
+    navigation.navigate('Home');
   }
 
   useEffect(() => {
@@ -241,12 +265,18 @@ function ApplicationForm({navigation}) {
     }
 
     if (placeImage) {
-      formData.append('files.place_avatar', {
-        uri: placeImage.uri,
+      //let imageSource = await RNFS.readFile(placeImage.uri, 'base64');
+      let image = {
         type: placeImage.type,
-        name: placeImage.name,
-      });
+        name: placeImage.fileName,
+        uri:
+          Platform.OS === 'android'
+            ? placeImage.uri
+            : placeImage.uri.replace('file://', ''),
+      };
+      formData.append('files.place_avatar', image);
     }
+
     const data = {};
     data.place_name = placeName;
     data.manager_name = name;
@@ -262,8 +292,10 @@ function ApplicationForm({navigation}) {
       loadingButton.showLoading(true);
       let response = await fetch(Config.API_URL + '/applications', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           Authorization: `Bearer ${token}`,
+          //'Content-Type': 'multipart/form-data',
         },
         body: formData,
       });
@@ -274,7 +306,6 @@ function ApplicationForm({navigation}) {
       loadingButton.showLoading(false);
     } catch (e) {
       loadingButton.showLoading(false);
-      console.log(e);
     }
   }
   return (
@@ -340,7 +371,7 @@ function ApplicationForm({navigation}) {
         ) : null}
         <Button
           title={placeImage ? 'Αλλαγη φωτογραφιας' : 'Φωτογραφια προφιλ'}
-          onPress={pickProfileImage}
+          onPress={pickProfileImage2}
         />
         <MaterialTextField
           label="Όνομα μέρους"
@@ -473,7 +504,7 @@ function ApplicationForm({navigation}) {
           <Text style={{margin: 10, textAlign: 'center', color: '#636363'}}>
             Θα σε ειδοποιήσουμε μετά την επεξεργασία της δήλωσης.
           </Text>
-          <Button title="Πηγενε με πισω" onPress={handleModalClose} />
+          <Button title="Πήγαινε με πισω" onPress={handleModalClose} />
         </View>
       </Modal>
     </ScrollView>

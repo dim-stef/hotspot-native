@@ -3,33 +3,73 @@
 import Config from 'react-native-config';
 import React, {useState, useContext, useEffect} from 'react';
 import ActionButton from 'react-native-action-button';
-import {Dimensions, View, Text, Image, TouchableOpacity} from 'react-native';
+import {
+  Dimensions,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  TouchableNativeFeedback,
+  Button,
+  RefreshControl,
+} from 'react-native';
 import PplButton from './PplButton';
+import WaitTime from './WaitTime';
 import {SafeAreaView, StyleSheet, ScrollView} from 'react-native';
+import {FAB} from 'react-native-paper';
+import AsyncStorage from '@react-native-community/async-storage';
 import AntDesignIcons from 'react-native-vector-icons/Feather';
+import Modal from 'react-native-modal';
 import {UserContext} from '../Context';
 import {getColorFromURL} from 'rn-dominant-color';
 
 function PlaceDetails({navigation, route}) {
-  const [p, setP] = useState(route.params.p);
+  const [isReportModalVisible, setReportModalVisible] = useState(false);
+  const [place, setPlace] = useState(route.params.p);
+  const [refreshing, setRefreshing] = useState(false);
   const [dominantColor, setDominantColor] = useState('#f00000');
   const userContext = useContext(UserContext);
 
   const width = Dimensions.get('window').width;
-
   const [translations, setTranslations] = useState([]);
   const [assessments, setAssessments] = useState([]);
-
-  function ownsPlace(p) {
-    return userContext.user && p.user.id === userContext.user.id;
+  let reportMessage = 'Ανεφερε το';
+  let canReport = true;
+  if (place.reported) {
+    reportMessage = 'Εχεις ηδη αναφερει αυτο το μερος';
+    canReport = false;
+  } else if (!userContext.isAuth) {
+    reportMessage = 'Πρεπει να εχεις λογαριασμο για να αναφερεις ενα μερος';
+    canReport = false;
   }
-  function getTranslatedType(p) {
+
+  function ownsPlace(place) {
+    return userContext.user && place.user.id === userContext.user.id;
+  }
+  const toggleModal = () => {
+    setReportModalVisible(!isReportModalVisible);
+  };
+
+  async function refreshPlace() {
+    try {
+      setRefreshing(true);
+      const url = `${Config.API_URL}/places?id=${place.id}`;
+      let response = await fetch(url);
+      let json = await response.json();
+      setRefreshing(false);
+      setPlace(json[0]);
+    } catch (e) {
+      console.error(e);
+      setRefreshing(false);
+    }
+  }
+  function getTranslatedType(place) {
     try {
       return translations.types.find(item => {
-        return item.type === p.place_type.type;
+        return item.type === place.place_type.type;
       }).translations.el;
     } catch (e) {
-      return 'Αλλο';
+      return null;
     }
   }
   async function getTranslations() {
@@ -43,49 +83,107 @@ function PlaceDetails({navigation, route}) {
     try {
       let response = await fetch(
         Config.API_URL +
-          `/population-assessments?place.id=${p.id}&_sort=created_at:DESC`,
+          `/population-assessments?place.id=${place.id}&_sort=created_at:DESC`,
       );
       let json = await response.json();
       setAssessments(json);
     } catch (e) {}
   }
+  async function reportPlace() {
+    let token = null;
+    try {
+      token = await AsyncStorage.getItem('token');
+    } catch (e) {
+      // saving error
+    }
+    try {
+      let response = await fetch(`${Config.API_URL}/reports/`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          place: place.id,
+        }),
+      });
+    } catch (e) {}
+  }
+  function handleReportClick() {
+    reportPlace();
+    toggleModal();
+  }
   useEffect(() => {
-    if (p) {
+    if (place) {
       getPopulationAssessments();
       try {
-        getColorFromURL(Config.API_URL + p.profile_image.url).then(colors => {
-          setDominantColor(colors.primary);
-        });
+        getColorFromURL(Config.DOMAIN_URL + place.profile_image.url).then(
+          colors => {
+            setDominantColor(colors.primary);
+          },
+        );
       } catch (e) {
         setDominantColor('#dddddd');
       }
     }
 
     getTranslations();
-  }, [p]);
+  }, [place]);
 
-  if (p) {
-    const url = Config.API_URL;
+  if (place) {
+    const url = Config.DOMAIN_URL;
 
     const images = {
-      thumbnail: p.profile_image
-        ? url + p.profile_image.formats.thumbnail.url
+      thumbnail: place.profile_image
+        ? url + place.profile_image.formats
+          ? place.profile_image.formats.thumbnail.url
+          : place.profile_image.url
         : null,
-      profile: p.profile_image ? url + p.profile_image.url : null,
+      profile: place.profile_image ? url + place.profile_image.url : null,
     };
     return (
       <>
-        <ScrollView style={{height: '100%'}}>
-          <View>
-            <View
-              source={{uri: images.thumbnail}}
-              style={{
-                width: width,
-                height: 130,
-                opacity: 0.7,
-                backgroundColor: dominantColor,
-              }}
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              enabled
+              onRefresh={refreshPlace}
+              refreshing={refreshing}
             />
+          }>
+          <View>
+            <View>
+              <View
+                source={{uri: images.thumbnail}}
+                style={{
+                  width: width,
+                  height: 130,
+                  maxHeight: 130,
+                  opacity: 0.7,
+                  backgroundColor: dominantColor,
+                }}>
+                <TouchableNativeFeedback
+                  onPress={toggleModal}
+                  background={TouchableNativeFeedback.Ripple('#f0f0f0', true)}>
+                  <View
+                    style={{
+                      zIndex: 2,
+                      backgroundColor: 'white',
+                      position: 'absolute',
+                      height: 50,
+                      width: 50,
+                      right: 10,
+                      bottom: 10,
+                      borderRadius: 100,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <AntDesignIcons name="flag" size={24} color="red" />
+                  </View>
+                </TouchableNativeFeedback>
+              </View>
+            </View>
             <View style={styles.placeCard}>
               <View style={styles.placeInfoCard}>
                 {images.profile ? (
@@ -112,48 +210,65 @@ function PlaceDetails({navigation, route}) {
                       alignItems: 'center',
                     }}>
                     <Text style={{fontSize: 26, fontWeight: 'bold'}}>
-                      {p.name.charAt(0).toUpperCase()}
+                      {place.name.charAt(0).toUpperCase()}
                     </Text>
                   </View>
                 )}
 
                 <View style={styles.info}>
-                  <Text style={styles.name}>{p.name}</Text>
-                  <Text style={styles.type}>{getTranslatedType(p)}</Text>
+                  <Text style={styles.name}>{place.name}</Text>
+                  {getTranslatedType(place) ? (
+                    <Text style={styles.type}>{getTranslatedType(place)}</Text>
+                  ) : null}
                 </View>
               </View>
-              {p.last_assessment ? (
+              {place.last_assessment ? (
                 <View style={styles.ppl}>
-                  <Text>Πληθυσμός</Text>
-                  <PplButton population={p.last_assessment.assessment} />
+                  <Text style={{margin: 5, fontWeight: 'bold'}}>Πληθυσμός</Text>
+                  <PplButton population={place.last_assessment.assessment} />
                 </View>
               ) : null}
             </View>
-            <View style={styles.desc}>
-              <Text
+            {place.estimated_wait_time !== 0 &&
+            place.estimated_wait_time !== null ? (
+              <View
                 style={{
-                  fontWeight: 'bold',
-                  fontSize: 18,
-                  marginTop: 10,
+                  width: '100%',
+                  justifyContent: 'flex-start',
+                  alignItems: 'flex-start',
+                  marginLeft: 10,
+                  marginTop: 20,
                 }}>
-                Λεπτομέρειες:
-              </Text>
-              <Text
-                style={{
-                  fontWeight: '100',
-                  fontSize: 15,
-                  marginTop: 5,
-                }}>
-                Phasellus faucibus scelerisque eleifend donec pretium. Orci
-                porta non pulvinar neque laoreet suspendisse. Amet nisl suscipit
-                adipiscing bibendum est.
-              </Text>
-            </View>
+                <WaitTime waitTime={place.estimated_wait_time} size="large" />
+              </View>
+            ) : null}
+
+            {place.description ? (
+              <View style={styles.desc}>
+                <Text
+                  style={{
+                    fontWeight: 'bold',
+                    fontSize: 18,
+                    marginTop: 10,
+                  }}>
+                  Λεπτομέρειες:
+                </Text>
+                <Text
+                  style={{
+                    fontWeight: '100',
+                    fontSize: 15,
+                    marginTop: 5,
+                  }}>
+                  {place.description}
+                </Text>
+              </View>
+            ) : null}
+
             <View style={styles.footer}>
               <Text
                 style={{
                   fontWeight: 'bold',
-                  fontSize: 18,
+                  fontSize: 24,
                   marginTop: 10,
                 }}>
                 Ιστορικό
@@ -180,7 +295,7 @@ function PlaceDetails({navigation, route}) {
                           alignItems: 'center',
                           width: '40%',
                         }}>
-                        <Text style={{fontSize: 16}}>
+                        <Text style={{fontSize: 16, color: '#8c8c8c'}}>
                           Πρίν από {timeSince(new Date(item.created_at))}
                         </Text>
                       </View>
@@ -190,17 +305,40 @@ function PlaceDetails({navigation, route}) {
             </View>
           </View>
         </ScrollView>
-        {ownsPlace(p) ? (
-          <ActionButton
-            buttonColor="#03a9f4"
-            onPress={() => navigation.navigate('EditPlace', {place: p})}
-            renderIcon={active =>
-              active ? (
-                <AntDesignIcons name="edit-2" size={26} color="white" />
-              ) : (
-                <AntDesignIcons name="edit-2" size={26} color="white" />
-              )
-            }
+        <Modal
+          isVisible={isReportModalVisible}
+          useNativeDriver={true}
+          onBackdropPress={() => setReportModalVisible(false)}>
+          <View
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <View
+              style={{
+                width: '100%',
+                backgroundColor: 'white',
+                padding: 20,
+                borderRadius: 5,
+                justifyContent: 'center',
+                textAlign: 'center',
+              }}>
+              <Text style={{alignSelf: 'center', margin: 20, fontSize: 16}}>
+                Δείχνει λάθος πληθυσμό το{' '}
+                <Text style={{fontWeight: 'bold'}}>{place.name}</Text>;
+              </Text>
+              <Button
+                title={reportMessage}
+                disabled={!canReport}
+                onPress={handleReportClick}
+                color="red"
+              />
+            </View>
+          </View>
+        </Modal>
+        {ownsPlace(place) ? (
+          <FAB
+            style={styles.fab}
+            icon="pencil-outline"
+            color="white"
+            onPress={() => navigation.navigate('EditPlace', {place: place})}
           />
         ) : null}
       </>
@@ -242,6 +380,13 @@ function timeSince(date) {
 }
 
 const styles = StyleSheet.create({
+  fab: {
+    backgroundColor: '#1bc4f2',
+    position: 'absolute',
+    margin: 30,
+    right: 0,
+    bottom: 0,
+  },
   list: {
     marginTop: 10,
   },

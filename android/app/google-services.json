@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "348466955146",
+    "firebase_url": "https://tsekit.firebaseio.com",
+    "project_id": "tsekit",
+    "storage_bucket": "tsekit.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348466955146:android:20d1a4ad688d1d0383fe73",
+        "android_client_info": {
+          "package_name": "com.tsekit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "348466955146-gppjs51se69f5qid1f51nue9r6tbe7a5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-af0golmeOk42YempTh3ICFQUnS2HCfA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "348466955146-gppjs51se69f5qid1f51nue9r6tbe7a5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

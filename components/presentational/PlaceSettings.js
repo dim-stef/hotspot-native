@@ -1,11 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {
-  useState,
-  useEffect,
-  useContext,
-  PermissionsAndroid,
-} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
+import {PermissionsAndroid} from 'react-native';
 import Config from 'react-native-config';
 import {Text, View, Navigator} from 'react-native';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
@@ -15,13 +11,27 @@ import {PlaceContext} from '../Context';
 import Geolocation from '@react-native-community/geolocation';
 
 function PlaceSettings({navigation, ...rest}) {
-  Geolocation.setRNConfiguration();
   const [mapref, setMapref] = useState();
-  const [geolocation, setGeolocation] = useState(undefined);
   const [place, setPlace] = useState(null);
   const [geometry, setGeometry] = useState({lat: 37.97945, lng: 23.71622});
   const placeContext = useContext(PlaceContext);
 
+  async function getCurrentPlaceFromPosition() {
+    try {
+      let response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json??language=el&latlng=${
+          geometry.lat
+        },${geometry.lng}&key=${Config.GOOGLE_API_KEY}`,
+      );
+      let json = await response.json();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    getCurrentPlaceFromPosition();
+  }, [geometry]);
   async function getPlaceDetails() {
     try {
       let response = await fetch(
@@ -31,7 +41,6 @@ function PlaceSettings({navigation, ...rest}) {
       );
       let json = await response.json();
       createLocation(json.result);
-      //return json.movies;
     } catch (error) {
       console.error(error);
     }
@@ -84,26 +93,54 @@ function PlaceSettings({navigation, ...rest}) {
     } else {
     }
   }
+
+  async function requestLocationPermission() {
+    //navigator.geolocation.requestAuthorization();
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Location Permission',
+          message: 'This App needs access to your location ',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        Geolocation.getCurrentPosition(info => {
+          setGeometry(
+            {lat: info.coords.latitude, lng: info.coords.longitude},
+            error => console.log('Error', JSON.stringify(error)),
+            {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
+          );
+        });
+      } else {
+        setGeometry({lat: 37.97945, lng: 23.71622});
+      }
+    } catch (err) {
+      console.error(err);
+      setGeometry({lat: 37.97945, lng: 23.71622});
+    }
+  }
+
   useEffect(() => {
-    Geolocation.getCurrentPosition(info => setGeolocation({latitude: info.coords.latitude,longitude:info.coords.longitude}));
+    //requestLocationPermission();
     if (place) {
       getPlaceDetails();
     }
   }, [place]);
 
-  if (geolocation) {
+  if (geometry) {
     const animateToRegion = () => {
       mapref.animateToRegion(
         {
-          latitude: geolocation.latitude,
-          longitude: geolocation.longitude,
+          latitude: geometry.lat,
+          longitude: geometry.lng,
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
         },
         5,
       );
     };
-  
+
     return (
       <>
         <View style={{flexDirection: 'column'}}>
@@ -119,11 +156,7 @@ function PlaceSettings({navigation, ...rest}) {
               fetchDetails={true}
               onPress={(data, details = null) => {
                 // 'details' is provided when fetchDetails = true
-                console.log(data);
                 setPlace(data);
-              }}
-              onChangeText={data => {
-                console.log(data);
               }}
               onFail={error => console.log(error)}
               query={{

@@ -1,21 +1,46 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
 import Config from 'react-native-config';
-import React, {useEffect, useContext, useState, useLayoutEffect} from 'react';
+import React, {
+  useEffect,
+  useContext,
+  useState,
+  useLayoutEffect,
+  useMemo,
+} from 'react';
 import {View, Text, Image, TouchableOpacity} from 'react-native';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
 import {Picker} from '@react-native-community/picker';
-import {PlaceTypesContext} from '../Context';
+import {
+  PlaceTypesContext,
+  LocationsContext,
+  PopulationContext,
+} from '../Context';
 import useTranslations from '../hooks/useTranslations';
 
-function useFilters(
-  defaultValue,
-  paramValue,
-  getValuesEndpoint,
-  buildValues,
-  translations,
-) {
-  const placeTypesContext = useContext(PlaceTypesContext);
+const populationValues = [
+  {
+    value: 'low',
+  },
+  {
+    value: 'medium',
+  },
+  {
+    value: 'high',
+  },
+];
+function useFilters({
+  defaultValue = null,
+  paramValue = null,
+  fixedValues = false,
+  getValuesEndpoint = null,
+  buildValues = null,
+  translations = null,
+  hasTranslations = false,
+  translationsLoading = false,
+  _context = null,
+}) {
+  const placeTypesContext = useContext(_context);
   function getTranslation(value) {
     try {
       return translations.types.find(item => item.type == value).translations
@@ -25,41 +50,62 @@ function useFilters(
     }
   }
   const [values, setValues] = useState(placeTypesContext.types);
-  let defaultSelected = paramValue ? getTranslation(paramValue) : defaultValue;
+  let defaultSelected = paramValue
+    ? hasTranslations
+      ? getTranslation(paramValue)
+      : paramValue
+    : defaultValue;
   const [selectedValue, setSelectedValue] = useState(defaultValue);
 
   async function getValues() {
-    try {
-      let response = await fetch(getValuesEndpoint);
-      let json = await response.json();
-      setValues(buildValues(json));
-      placeTypesContext.types = buildValues(json);
-    } catch (e) {
-      return;
+    if (fixedValues) {
+      setValues(buildValues());
+    } else {
+      try {
+        let response = await fetch(getValuesEndpoint);
+        let json = await response.json();
+        setValues(buildValues(json));
+        placeTypesContext.types = buildValues(json);
+      } catch (e) {
+        return;
+      }
     }
   }
 
   useLayoutEffect(() => {
-    setSelectedValue(getTranslation(paramValue));
-  }, [values, translations]);
+    if (!translationsLoading) {
+      setSelectedValue(
+        hasTranslations ? getTranslation(paramValue) : paramValue,
+      );
+    }
+  }, [values, translationsLoading]);
 
   useLayoutEffect(() => {
-    if (placeTypesContext.types.length === 1) {
+    if (!translationsLoading && placeTypesContext.types.length === 1) {
       getValues();
     }
-  }, [translations]);
+  }, [translationsLoading]);
 
   return [values, setValues, selectedValue, setSelectedValue];
 }
-function Filters({navigation, ...rest}) {
+const Filters = React.memo(({navigation, ...rest}) => {
   const defaultLocationValue = 'Όλες οι περιοχές';
   const defaultPlaceTypeValue = 'Όλα τα είδη';
-  const [locations, setLocations] = useState([{value: defaultLocationValue}]);
+  const defaultPopulationValue = 'Όλοι οι πληθυσμοί';
+  //const [locations, setLocations] = useState([{value: defaultLocationValue}]);
   const [
     translations,
     getTranslatedType,
     getTypeValueFromTranslation,
+    translationsLoading,
   ] = useTranslations();
+
+  const [
+    populationTranslations,
+    getPopulationTranslatedType,
+    getTypeValueFromPopulationTranslation,
+    populationTranslationsLoading,
+  ] = useTranslations(1);
 
   function buildPlaceTypeValues(jsonLocations) {
     return [
@@ -70,29 +116,6 @@ function Filters({navigation, ...rest}) {
     ];
   }
 
-  const [
-    placeTypes,
-    setPlaceTypes,
-    selectedPlaceType,
-    setSelectedPlaceType,
-  ] = useFilters(
-    defaultPlaceTypeValue,
-    rest.route.params.filters.place_type.value,
-    Config.API_URL + '/place-types',
-    buildPlaceTypeValues,
-    translations,
-  );
-
-  let defaultLocationSelected = rest.route.params.filters.location.value
-    ? {
-        value: rest.route.params.filters.location.value,
-      }
-    : locations[0];
-
-  const [selectedLocation, setSelectedLocation] = useState(
-    defaultLocationSelected.value,
-  );
-
   function buildValues(jsonLocations) {
     return [
       {value: defaultLocationValue},
@@ -102,31 +125,65 @@ function Filters({navigation, ...rest}) {
     ];
   }
 
-  async function getLocations() {
-    try {
-      let response = await fetch(Config.API_URL + '/generic-locations');
-      let json = await response.json();
-      setLocations(buildValues(json));
-    } catch (e) {
-      return;
-    }
+  function buildPopulationValues() {
+    return [
+      {value: defaultPopulationValue},
+      ...populationValues.map(population => {
+        return {value: getPopulationTranslatedType(population.value)};
+      }),
+    ];
   }
 
-  useEffect(() => {
-    getLocations();
-  }, []);
+  const [
+    placeTypes,
+    setPlaceTypes,
+    selectedPlaceType,
+    setSelectedPlaceType,
+  ] = useFilters({
+    defaultValue: defaultPlaceTypeValue,
+    paramValue: rest.route.params.filters.place_type.value,
+    fixedValues: null,
+    getValuesEndpoint: Config.API_URL + '/place-types',
+    buildValues: buildPlaceTypeValues,
+    translations: translations,
+    hasTranslations: true,
+    translationsLoading: translationsLoading,
+    _context: PlaceTypesContext,
+  });
 
-  /*useEffect(() => {
-    if (selectedLocation !== prevSelectedLocation) {
-      rest.route.params.setFilters(filters => ({
-        ...filters,
-        location: {
-          value: selectedLocation === defaultLocationValue ? null : selectedLocation,
-        },
-      }));
-    }
-    setPrevSelectedLocation(selectedLocation);
-  }, [selectedLocation]);*/
+  const [
+    locations,
+    setLocations,
+    selectedLocation,
+    setSelectedLocation,
+  ] = useFilters({
+    defaultValue: defaultLocationValue,
+    paramValue: rest.route.params.filters.location.value,
+    fixedValues: null,
+    getValuesEndpoint: Config.API_URL + '/generic-locations',
+    buildValues: buildValues,
+    translations: null,
+    hasTranslations: false,
+    translationsLoading: false,
+    _context: LocationsContext,
+  });
+
+  const [
+    populations,
+    setPopulations,
+    selectedPopulation,
+    setSelectedPopulation,
+  ] = useFilters({
+    defaultValue: defaultPopulationValue,
+    paramValue: rest.route.params.filters.population.value,
+    fixedValues: true,
+    getValuesEndpoint: Config.API_URL + '/place-types',
+    buildValues: buildPopulationValues,
+    translations: populationTranslations,
+    hasTranslations: true,
+    translationsLoading: populationTranslationsLoading,
+    _context: PopulationContext,
+  });
 
   function handleFilterPress() {
     rest.route.params.setFilters(filters => ({
@@ -142,6 +199,13 @@ function Filters({navigation, ...rest}) {
           selectedPlaceType === defaultPlaceTypeValue
             ? null
             : getTypeValueFromTranslation(selectedPlaceType),
+      },
+      population: {
+        param: 'population_contains',
+        value:
+          selectedPopulation === defaultPopulationValue
+            ? null
+            : getTypeValueFromPopulationTranslation(selectedPopulation),
       },
     }));
 
@@ -178,6 +242,20 @@ function Filters({navigation, ...rest}) {
         setOption={setSelectedPlaceType}
         selectedOption={selectedPlaceType}
       />
+      <Text
+        style={{
+          fontSize: 20,
+          fontWeight: 'bold',
+          marginTop: 20,
+          marginBottom: 20,
+        }}>
+        Φίλτραρε ανά πληθυσμό
+      </Text>
+      <CustomPicker
+        options={populations}
+        setOption={setSelectedPopulation}
+        selectedOption={selectedPopulation}
+      />
       <View
         style={{
           width: '100%',
@@ -197,7 +275,7 @@ function Filters({navigation, ...rest}) {
       </View>
     </View>
   );
-}
+});
 
 function CustomPicker({options, setOption, selectedOption}) {
   return (

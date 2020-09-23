@@ -33,6 +33,7 @@ const PplButton = props => {
               ? colors.backgroundMedium
               : colors.backgroundHigh,
           flexGrow: 1,
+          minHeight: 50,
           borderRadius: 5,
           width: 80,
           justifyContent: 'center',
