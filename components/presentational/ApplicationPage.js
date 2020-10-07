@@ -279,6 +279,7 @@ function ApplicationForm({navigation}) {
 
     const data = {};
     data.place_name = placeName;
+    data.place_description = description;
     data.manager_name = name;
     data.manager_surname = surName;
     data.phone_number = phoneNumber;

@@ -22,7 +22,7 @@ function Login({navigation}) {
   }
 
   async function handleLogin() {
-    let response = await fetch(Config.DOMAIN_URL + '/auth/local/', {
+    let response = await fetch(Config.DOMAIN_URL + '/auth/local', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -35,7 +35,6 @@ function Login({navigation}) {
     });
 
     const content = await response.json();
-    console.log(content);
     if (content.statusCode === 400) {
       setError(true);
     }
@@ -134,7 +133,7 @@ export function Register({navigation}) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: null,
+        username: email,
         email: email,
         password: password,
       }),

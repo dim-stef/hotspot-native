@@ -19,7 +19,7 @@ const colors = {
   textHigh: '#f44336',
 };
 
-const PplButton = props => {
+const PopulationIndicator = props => {
   const population = props.population.toLowerCase();
 
   return (
@@ -60,4 +60,4 @@ const PplButton = props => {
   );
 };
 
-export default PplButton;
+export default PopulationIndicator;

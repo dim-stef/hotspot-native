@@ -14,7 +14,8 @@ import {
 import {SafeAreaView, ScrollView, StatusBar, FlatList} from 'react-native';
 import {FAB} from 'react-native-paper';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
-import PplButton from './PplButton';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import PopulationIndicator from './PopulationIndicator';
 import WaitTime from './WaitTime';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import useTranslations from '../hooks/useTranslations';
@@ -61,7 +62,9 @@ const PlaceList = ({navigation, filters, setFilters}) => {
   const [places, setPlaces] = useState(null);
   const [translations, setTranslations] = useState([]);
   //const [start, setStart] = useState(0);
-  const [_, getTranslatedType, getTypeValueFromTranslation] = useTranslations();
+  const [_, getTranslatedType, getTypeValueFromTranslation] = useTranslations(
+    'place_types',
+  );
 
   async function getPlaces() {
     try {
@@ -117,7 +120,17 @@ const PlaceList = ({navigation, filters, setFilters}) => {
       })}
     </ScrollView>
   ) : (
-    <View style={{height: '100%', width: '100%', justifyContent: 'center'}}>
+    <View
+      style={{
+        height: '100%',
+        width: '100%',
+        justifyContent: 'center',
+      }}>
+      {places.length == 0 ? (
+        <Text style={{marginTop: 40, fontSize: 18, alignSelf: 'center'}}>
+          Δεν βρέθηκαν μέρη με αυτά τα φίλτρα
+        </Text>
+      ) : null}
       <FlatList
         onEndReached={loadData}
         data={places}
@@ -149,11 +162,11 @@ export function ListItem({navigation, getTranslatedType, p, instant = false}) {
     <TouchableOpacity
       onPress={() => handlePress(p)}
       style={{
-        flexDirection: 'row',
         alignItems: 'center',
-        height: 120,
-        maxWidth: '100%',
+        minHeight: 120,
+        maxHeight: 200,
         padding: 20,
+        maxWidth: '100%',
         backgroundColor: 'white',
         borderRadius: 10,
         margin: 10,
@@ -167,60 +180,104 @@ export function ListItem({navigation, getTranslatedType, p, instant = false}) {
         elevation: 5,
       }}>
       <View
-        style={{height: '100%', flexBasis: '20%', justifyContent: 'center'}}>
-        {p.profile_image ? (
-          <Image
-            source={{
-              uri: Config.DOMAIN_URL + `${p.profile_image.url}`,
-            }}
-            style={{
-              height: 60,
-              width: 60,
-              borderRadius: 100,
-              backgroundColor: 'white',
-            }}
-          />
-        ) : (
-          <View
-            style={{
-              height: 60,
-              width: 60,
-              borderRadius: 100,
-              backgroundColor: '#f3f3f3',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <Text>{p.name.charAt(0).toUpperCase()}</Text>
-          </View>
-        )}
-      </View>
-      <View style={{marginLeft: 10, flexBasis: '50%'}}>
-        <Text
-          numberOfLines={1}
-          ellipsizeMode="tail"
-          style={{fontSize: 16, fontWeight: 'bold'}}>
-          {p.name}
-        </Text>
-        {getTranslatedType(p.place_type) ? (
-          <Text style={{fontSize: 14}}>{getTranslatedType(p.place_type)}</Text>
-        ) : null}
-
-        {p.last_assessment ? (
-          <Text style={{fontSize: 12, color: 'gray'}}>
-            Τελ. ενημέρωση πριν{' '}
-            {timeSince(new Date(p.last_assessment.created_at))}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          width: '100%',
+        }}>
+        <View style={{flexBasis: '20%', justifyContent: 'center'}}>
+          {p.profile_image ? (
+            <Image
+              source={{
+                uri: Config.DOMAIN_URL + `${p.profile_image.url}`,
+              }}
+              style={{
+                height: 60,
+                width: 60,
+                borderRadius: 100,
+                backgroundColor: 'white',
+              }}
+            />
+          ) : (
+            <View
+              style={{
+                height: 60,
+                width: 60,
+                borderRadius: 100,
+                backgroundColor: '#f3f3f3',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <Text>{p.name.charAt(0).toUpperCase()}</Text>
+            </View>
+          )}
+        </View>
+        <View style={{marginLeft: 10, flexBasis: '50%'}}>
+          <Text
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={{fontSize: 16, fontWeight: 'bold'}}>
+            {p.name}
           </Text>
-        ) : null}
-      </View>
-      {p.last_assessment ? (
-        <View style={{flexGrow: 1, marginLeft: 10, alignItems: 'center'}}>
-          <Text style={{fontSize: 12, color: 'gray'}}>Κόσμος</Text>
-          <PplButton population={p.last_assessment.assessment} />
-          {p.estimated_wait_time !== 0 && p.estimated_wait_time !== null ? (
-            <WaitTime waitTime={p.estimated_wait_time} />
+          {getTranslatedType(p.place_type) ? (
+            <Text style={{fontSize: 14}}>
+              {getTranslatedType(p.place_type)}
+            </Text>
           ) : null}
         </View>
-      ) : null}
+        {p.last_assessment ? (
+          <View style={{flexGrow: 1, marginLeft: 10, alignItems: 'center'}}>
+            <Text style={{fontSize: 12, color: 'gray', marginBottom: 5}}>
+              Κόσμος
+            </Text>
+            <PopulationIndicator population={p.last_assessment.assessment} />
+          </View>
+        ) : null}
+      </View>
+      <View
+        style={{
+          flexDirection: 'row',
+          width: '100%',
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+          margin: 5,
+          marginTop: 10,
+        }}>
+        <View>
+          {p.last_assessment ? (
+            <Text style={{fontSize: 14}}>
+              Ενημερώθηκε πριν{' '}
+              {timeSince(new Date(p.last_assessment.created_at))}
+            </Text>
+          ) : null}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              alignSelf: 'flex-start',
+              marginTop: 3,
+            }}>
+            <Icon name="map-outline" color="gray" style={{marginRight: 3}} />
+            <Text style={{fontSize: 12, color: 'gray'}}>
+              {p.location && p.location.full_name
+                ? p.location.full_name.replace(/, Ελλάδα/g, '')
+                : null}
+            </Text>
+          </View>
+          <View style={{alignItems: 'flex-start'}}>
+            {p.estimated_wait_time !== 0 && p.estimated_wait_time !== null ? (
+              <WaitTime
+                waitTime={p.estimated_wait_time}
+                size="large"
+                color="green"
+                iconSize={12}
+                style={{color: 'green', fontSize: 12}}
+              />
+            ) : null}
+          </View>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 }

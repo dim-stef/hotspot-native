@@ -16,6 +16,8 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import {Picker} from '@react-native-community/picker';
 import {UserContext, PlaceContext} from '../Context';
+import {Button} from 'react-native-paper';
+import ChangePopulationStatus from './ChangePopulationStatus';
 
 const colors = {
   backgroundLow: '#4caf5096',
@@ -109,44 +111,7 @@ function EditPlace({navigation, ...rest}) {
         Για την καλύτερη εμπειρία είναι καλό να ανανεώνεις τον πληθυσμό κάθε 1
         ώρα ή όταν παρατηρείται αλλαγή
       </Text>
-      <View
-        style={{
-          flexDirection: 'row',
-          padding: 0,
-        }}>
-        <StatusButton
-          status={status}
-          value="Low"
-          label="Λίγος"
-          backgroundColor={colors.backgroundLow}
-          color={colors.textLow}
-          onPress={() => setStatus('Low')}
-          style={{
-            borderTopLeftRadius: 10,
-            borderBottomLeftRadius: 10,
-            borderRightColor: '#ececec',
-            borderRightWidth: 1,
-          }}
-        />
-        <StatusButton
-          status={status}
-          value="Medium"
-          label="Μεσαίος"
-          backgroundColor={colors.backgroundMedium}
-          color={colors.textMedium}
-          onPress={() => setStatus('Medium')}
-          style={{borderRightColor: '#ececec', borderRightWidth: 1}}
-        />
-        <StatusButton
-          status={status}
-          value="High"
-          label="Πολύς"
-          backgroundColor={colors.backgroundHigh}
-          color={colors.textHigh}
-          onPress={() => setStatus('High')}
-          style={{borderTopRightRadius: 10, borderBottomRightRadius: 10}}
-        />
-      </View>
+      <ChangePopulationStatus status={status} setStatus={setStatus} />
       <Text style={{fontWeight: 'bold', fontSize: 24, marginTop: 20}}>
         Χρόνος αναμονής
       </Text>
@@ -169,41 +134,27 @@ function EditPlace({navigation, ...rest}) {
           <Picker.Item label="Λιγότερο απο 30 λεπτά" value={30} />
         </Picker>
       </View>
+      <Text style={{fontWeight: 'bold', fontSize: 24, marginTop: 20}}>
+        Ημερολόγιο
+      </Text>
+      <View>
+        <Text style={{marginTop: 10, marginBottom: 10}}>
+          Φτιάξε ένα ημερολόγιο
+        </Text>
+        <Button
+          icon="calendar"
+          style={{backgroundColor: '#1bc4f2'}}
+          mode="contained"
+          onPress={() =>
+            navigation.navigate('Calendar', {place: rest.route.params.place})
+          }>
+          Αλλαξε το ημερολογιο
+        </Button>
+      </View>
     </SafeAreaView>
   );
 }
 
-function StatusButton({
-  status,
-  value,
-  label,
-  backgroundColor,
-  color,
-  onPress,
-  style = {},
-}) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={{
-        height: 100,
-        flexGrow: 1,
-        backgroundColor: status === value ? backgroundColor : '#f7f7f7',
-        justifyContent: 'center',
-        alignItems: 'center',
-        ...style,
-      }}>
-      <Text
-        style={{
-          fontSize: 20,
-          color: status === value ? color : 'black',
-          fontWeight: 'bold',
-        }}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
 const styles = StyleSheet.create({
   scene: {
     flex: 1,

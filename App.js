@@ -44,6 +44,7 @@ import EditPlace from './components/presentational/EditPlace';
 import ApplicationPage from './components/presentational/ApplicationPage';
 import Filters from './components/presentational/Filters';
 import MyPlaces from './components/presentational/MyPlaces';
+import Calendar from './components/presentational/Calendar';
 import {YellowBox} from 'react-native';
 YellowBox.ignoreWarnings(['Warning: ReactNative.createElement']);
 console.disableYellowBox = true;
@@ -159,6 +160,11 @@ const App: () => React$Node = () => {
             name="Filters"
             component={Filters}
             options={{title: 'Φίλτρα'}}
+          />
+          <Stack.Screen
+            name="Calendar"
+            component={Calendar}
+            options={{title: 'Ημερολόγιο'}}
           />
           <Stack.Screen
             name="EditPlace"

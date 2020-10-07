@@ -13,7 +13,7 @@ import {
   Button,
   RefreshControl,
 } from 'react-native';
-import PplButton from './PplButton';
+import PopulationIndicator from './PopulationIndicator';
 import WaitTime from './WaitTime';
 import {SafeAreaView, StyleSheet, ScrollView} from 'react-native';
 import {FAB} from 'react-native-paper';
@@ -225,7 +225,7 @@ function PlaceDetails({navigation, route}) {
               {place.last_assessment ? (
                 <View style={styles.ppl}>
                   <Text style={{margin: 5, fontWeight: 'bold'}}>Πληθυσμός</Text>
-                  <PplButton population={place.last_assessment.assessment} />
+                  <PopulationIndicator population={place.last_assessment.assessment} />
                 </View>
               ) : null}
             </View>
@@ -286,7 +286,7 @@ function PlaceDetails({navigation, route}) {
                 {assessments.length > 0 &&
                   assessments.map(item => (
                     <View style={styles.ListItem} key={item.created_at}>
-                      <PplButton population={item.assessment} />
+                      <PopulationIndicator population={item.assessment} />
                       <View
                         style={{
                           marginLeft: 25,

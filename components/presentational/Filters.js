@@ -98,14 +98,14 @@ const Filters = React.memo(({navigation, ...rest}) => {
     getTranslatedType,
     getTypeValueFromTranslation,
     translationsLoading,
-  ] = useTranslations();
+  ] = useTranslations('place_types');
 
   const [
     populationTranslations,
     getPopulationTranslatedType,
     getTypeValueFromPopulationTranslation,
     populationTranslationsLoading,
-  ] = useTranslations(1);
+  ] = useTranslations('population');
 
   function buildPlaceTypeValues(jsonLocations) {
     return [

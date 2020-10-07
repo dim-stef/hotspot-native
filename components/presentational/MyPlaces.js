@@ -21,7 +21,7 @@ import useTranslations from '../hooks/useTranslations';
 
 function MyPlaces({navigation, route}) {
   const {instant} = route.params;
-  const [translation, getTranslatedType] = useTranslations();
+  const [translation, getTranslatedType] = useTranslations('place_types');
   const [places, setPlaces] = useState(null);
   const [applications, setApplications] = useState(null);
   const userContext = useContext(UserContext);
