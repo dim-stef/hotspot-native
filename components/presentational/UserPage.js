@@ -12,6 +12,8 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
 import AnimateLoadingButton from 'react-native-animate-loading-button';
+import {useDispatch, useSelector} from 'react-redux';
+import {getUserPlaces} from './features/Authentication/userSlice';
 import {UserContext} from '../Context';
 import Login from './Login';
 
@@ -25,9 +27,14 @@ function UserPage({navigation}) {
 }
 
 function AuthenticatedUserPage({navigation}) {
+  const dispatch = useDispatch();
+  const {myPlaces} = useSelector(state => state.user);
   const [loadingButton, setLoadingButton] = useState(null);
   const userContext = useContext(UserContext);
 
+  useEffect(() => {
+    dispatch(getUserPlaces());
+  }, [dispatch]);
   function handleApplicationClick() {
     navigation.navigate('Application');
   }
@@ -40,7 +47,7 @@ function AuthenticatedUserPage({navigation}) {
     try {
       await AsyncStorage.removeItem('token');
     } catch (e) {
-      console.log(e)
+      console.log(e);
       // saving error
     }
     userContext.setAuth(null);

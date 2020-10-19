@@ -20,7 +20,14 @@ const styles = StyleSheet.create({
   },
 });
 
-function ChangePopulationStatus({status, setStatus}) {
+function ChangePopulationStatus({status, setStatus, onChange = () => {}}) {
+  function handleChange(value) {
+    // using this to display results after "click" instead of after "mount"
+    onChange(value);
+
+    // using this for rendering purposes
+    setStatus(value);
+  }
   return (
     <View
       style={{
@@ -33,7 +40,7 @@ function ChangePopulationStatus({status, setStatus}) {
         label="Λίγος"
         backgroundColor={colors.backgroundLow}
         color={colors.textLow}
-        onPress={() => setStatus('Low')}
+        onPress={() => handleChange('Low')}
         style={{
           borderTopLeftRadius: 10,
           borderBottomLeftRadius: 10,
@@ -47,7 +54,7 @@ function ChangePopulationStatus({status, setStatus}) {
         label="Μεσαίος"
         backgroundColor={colors.backgroundMedium}
         color={colors.textMedium}
-        onPress={() => setStatus('Medium')}
+        onPress={() => handleChange('Medium')}
         style={{borderRightColor: '#ececec', borderRightWidth: 1}}
       />
       <StatusButton
@@ -56,7 +63,7 @@ function ChangePopulationStatus({status, setStatus}) {
         label="Πολύς"
         backgroundColor={colors.backgroundHigh}
         color={colors.textHigh}
-        onPress={() => setStatus('High')}
+        onPress={() => handleChange('High')}
         style={{borderTopRightRadius: 10, borderBottomRightRadius: 10}}
       />
     </View>

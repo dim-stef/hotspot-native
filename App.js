@@ -30,6 +30,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
 import AsyncStorage from '@react-native-community/async-storage';
+import {Provider, useDispatch, useSelector} from 'react-redux';
 import {UserContext} from './components/Context';
 import PlaceList from './components/presentational/PlaceList';
 import Test from './components/presentational/Test';
@@ -42,10 +43,11 @@ import PlaceDetails from './components/presentational/PlaceDetails';
 import PlaceSettings from './components/presentational/PlaceSettings';
 import EditPlace from './components/presentational/EditPlace';
 import ApplicationPage from './components/presentational/ApplicationPage';
-import Filters from './components/presentational/Filters';
+import Filters from './components/presentational/features/Filters/Filters';
 import MyPlaces from './components/presentational/MyPlaces';
-import Calendar from './components/presentational/Calendar';
+import Calendar from './components/presentational/features/Calendar/Calendar';
 import {YellowBox} from 'react-native';
+import store from './components/store';
 YellowBox.ignoreWarnings(['Warning: ReactNative.createElement']);
 console.disableYellowBox = true;
 //import Home from './components/presentational/Home';
@@ -54,6 +56,14 @@ const Stack = createStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
 
 //<Ionicons name={iconName} size={size} color={color} />
+
+function ReduxWrapper() {
+  return (
+    <Provider store={store}>
+      <App />
+    </Provider>
+  );
+}
 const App: () => React$Node = () => {
   const [isAuth, setAuth] = useState(null);
   const [userData, setData] = useState(null);
@@ -164,7 +174,13 @@ const App: () => React$Node = () => {
           <Stack.Screen
             name="Calendar"
             component={Calendar}
-            options={{title: 'Ημερολόγιο'}}
+            options={{
+              title: 'Ημερολόγιο',
+              headerStyle: {
+                elevation: 0, // remove shadow on Android
+                shadowOpacity: 0, // remove shadow on iOS
+              },
+            }}
           />
           <Stack.Screen
             name="EditPlace"
@@ -218,4 +234,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default ReduxWrapper;

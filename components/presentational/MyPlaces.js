@@ -14,19 +14,24 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
 import AnimateLoadingButton from 'react-native-animate-loading-button';
+import {useDispatch, useSelector} from 'react-redux';
+import {getUserPlaces} from './features/Authentication/userSlice';
 import {UserContext} from '../Context';
 import {ListItem} from './PlaceList';
 import SkeletonPlaceList from './SkeletonPlaceList';
 import useTranslations from '../hooks/useTranslations';
 
 function MyPlaces({navigation, route}) {
+  const dispatch = useDispatch();
   const {instant} = route.params;
   const [translation, getTranslatedType] = useTranslations('place_types');
-  const [places, setPlaces] = useState(null);
+  //const [places, setPlaces] = useState(null);
   const [applications, setApplications] = useState(null);
   const userContext = useContext(UserContext);
+  const user = useSelector(state => state.user);
+  let places = user.myPlaces;
 
-  async function getPlaces() {
+  /*async function getPlaces() {
     let token = null;
     try {
       token = await AsyncStorage.getItem('token');
@@ -35,7 +40,8 @@ function MyPlaces({navigation, route}) {
     }
 
     try {
-      let uri = Config.API_URL + `/places?user.id=${userContext.user.id}`;
+      // let uri = Config.API_URL + `/places?user.id=${userContext.user.id}`;
+      let uri = Config.API_URL + '/my_places/';
       let response = await fetch(uri, {
         method: 'GET',
         headers: {
@@ -47,7 +53,7 @@ function MyPlaces({navigation, route}) {
     } catch (e) {
       console.log(e);
     }
-  }
+  }*/
 
   async function getApplications() {
     let token = null;
@@ -75,7 +81,8 @@ function MyPlaces({navigation, route}) {
   }
 
   useEffect(() => {
-    getPlaces();
+    //getPlaces();
+    dispatch(getUserPlaces());
     getApplications();
   }, []);
   return (

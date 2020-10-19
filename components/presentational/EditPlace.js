@@ -2,7 +2,13 @@
 /* eslint-disable react-native/no-inline-styles */
 import Config from 'react-native-config';
 import 'react-native-gesture-handler';
-import React, {useState, useContext, useEffect, useLayoutEffect} from 'react';
+import React, {
+  useState,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -15,6 +21,8 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Picker} from '@react-native-community/picker';
+import {useDispatch, useSelector} from 'react-redux';
+import {getUserPlaces} from './features/Authentication/userSlice';
 import {UserContext, PlaceContext} from '../Context';
 import {Button} from 'react-native-paper';
 import ChangePopulationStatus from './ChangePopulationStatus';
@@ -28,18 +36,49 @@ const colors = {
   textHigh: '#f44336',
 };
 
+function getWaitTimeValues() {
+  let waitTimes = [];
+
+  // counter is 25 to reach 120 minutes
+  for (let i = 0; i < 25; i++) {
+    let waitTime;
+    if (i == 0) {
+      waitTime = {
+        label: 'Δεν υπάρχει αναμονή',
+        value: i * 5,
+      };
+    } else {
+      waitTime = {
+        label: `Λιγότερο από ${i * 5} λεπτά`,
+        value: i * 5,
+      };
+    }
+
+    waitTimes.push(waitTime);
+  }
+
+  return waitTimes;
+}
+
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 function EditPlace({navigation, ...rest}) {
-  const [waitTime, setWaitTime] = useState(0);
+  const dispatch = useDispatch();
+  const [waitTime, setWaitTime] = useState(
+    rest.route.params.place.estimated_wait_time,
+  );
   const [status, setStatus] = useState(
     rest.route.params.place.last_assessment
       ? rest.route.params.place.last_assessment.assessment
       : null,
   );
+  const refreshPlace = rest.route.params.refreshPlace
+    ? rest.route.params.refreshPlace
+    : () => {};
   const [prevStatus, setPrevStatus] = useState(status);
+  const waitTimes = useRef(getWaitTimeValues());
   async function postStatus() {
     let token = null;
     try {
@@ -61,6 +100,12 @@ function EditPlace({navigation, ...rest}) {
         }),
       });
       let json = await response.json();
+
+      // update user places to get latest data
+      dispatch(getUserPlaces());
+
+      // refresh the place from which the user came
+      refreshPlace();
     } catch (e) {}
   }
 
@@ -129,9 +174,11 @@ function EditPlace({navigation, ...rest}) {
           selectedValue={waitTime}
           style={{height: 50, width: '100%'}}
           onValueChange={(itemValue, itemIndex) => updateWaitTime(itemValue)}>
-          <Picker.Item label="Δεν υπάρχει αναμονή" value={0} />
-          <Picker.Item label="Λιγότερο απο 5 λεπτά" value={5} />
-          <Picker.Item label="Λιγότερο απο 30 λεπτά" value={30} />
+          {waitTimes.current.map(waitTime => {
+            return (
+              <Picker.Item label={waitTime.label} value={waitTime.value} />
+            );
+          })}
         </Picker>
       </View>
       <Text style={{fontWeight: 'bold', fontSize: 24, marginTop: 20}}>
@@ -148,7 +195,7 @@ function EditPlace({navigation, ...rest}) {
           onPress={() =>
             navigation.navigate('Calendar', {place: rest.route.params.place})
           }>
-          Αλλαξε το ημερολογιο
+          Ανανέωσε το πληθυσμιακό ημερόλογιο
         </Button>
       </View>
     </SafeAreaView>

@@ -19,19 +19,45 @@ const colors = {
   textHigh: '#f44336',
 };
 
-const PopulationIndicator = props => {
-  const population = props.population.toLowerCase();
+const PopulationIndicator = ({population, editCalendarMode = false}) => {
+  if (population) {
+    population = population.toLowerCase();
+  }
 
+  // if indicator is in calendar mode and population is not set
+  // show gray background in order to "set" it
+  // else show regular background color based on the existing population
+  const backgroundColor =
+    editCalendarMode && !population
+      ? '#eaeaea'
+      : population === 'low'
+      ? colors.backgroundLow
+      : population === 'medium'
+      ? colors.backgroundMedium
+      : colors.backgroundHigh;
+
+  // do the same for text color
+  const textColor =
+    editCalendarMode && !population
+      ? 'gray'
+      : population === 'low'
+      ? colors.textLow
+      : population === 'medium'
+      ? colors.textMedium
+      : colors.textHigh;
+  const text =
+    editCalendarMode && !population
+      ? 'Κόσμος'
+      : population === 'low'
+      ? 'Λίγος'
+      : population === 'medium'
+      ? 'Μεσαίος'
+      : 'Πολύς';
   return (
     <>
       <View
         style={{
-          backgroundColor:
-            population === 'low'
-              ? colors.backgroundLow
-              : population === 'medium'
-              ? colors.backgroundMedium
-              : colors.backgroundHigh,
+          backgroundColor: backgroundColor,
           flexGrow: 1,
           minHeight: 50,
           borderRadius: 5,
@@ -42,18 +68,9 @@ const PopulationIndicator = props => {
         <Text
           style={{
             fontWeight: 'bold',
-            color:
-              population === 'low'
-                ? colors.textLow
-                : population === 'medium'
-                ? colors.textMedium
-                : colors.textHigh,
+            color: textColor,
           }}>
-          {population === 'low'
-            ? 'Λίγος'
-            : population === 'medium'
-            ? 'Μεσαίος'
-            : 'Πολύς'}
+          {text}
         </Text>
       </View>
     </>

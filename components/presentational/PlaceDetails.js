@@ -14,12 +14,13 @@ import {
   RefreshControl,
 } from 'react-native';
 import PopulationIndicator from './PopulationIndicator';
-import WaitTime from './WaitTime';
+import WaitTime from '../presentational/features/WaitTime/WaitTime';
 import {SafeAreaView, StyleSheet, ScrollView} from 'react-native';
 import {FAB} from 'react-native-paper';
 import AsyncStorage from '@react-native-community/async-storage';
 import AntDesignIcons from 'react-native-vector-icons/Feather';
 import Modal from 'react-native-modal';
+import Calendar from '../presentational/features/Calendar/Calendar';
 import {UserContext} from '../Context';
 import {getColorFromURL} from 'rn-dominant-color';
 
@@ -225,7 +226,9 @@ function PlaceDetails({navigation, route}) {
               {place.last_assessment ? (
                 <View style={styles.ppl}>
                   <Text style={{margin: 5, fontWeight: 'bold'}}>Πληθυσμός</Text>
-                  <PopulationIndicator population={place.last_assessment.assessment} />
+                  <PopulationIndicator
+                    population={place.last_assessment.assessment}
+                  />
                 </View>
               ) : null}
             </View>
@@ -243,7 +246,7 @@ function PlaceDetails({navigation, route}) {
               </View>
             ) : null}
 
-            {place.description ? (
+            {place.description && place.description !== '' ? (
               <View style={styles.desc}>
                 <Text
                   style={{
@@ -269,9 +272,11 @@ function PlaceDetails({navigation, route}) {
                 style={{
                   fontWeight: 'bold',
                   fontSize: 24,
-                  marginTop: 10,
+                  marginTop: 20,
+                  marginLeft: 10,
+                  marginBottom: 15,
                 }}>
-                Ιστορικό
+                Ημερολόγιο
               </Text>
               <View style={styles.footerButtons}>
                 {/*<TouchableOpacity style={styles.footerButton}>
@@ -282,7 +287,7 @@ function PlaceDetails({navigation, route}) {
                 <Text style={styles.footerButtonText}>Button 2</Text>
               </TouchableOpacity> */}
               </View>
-              <View style={styles.list}>
+              {/*<View style={styles.list}>
                 {assessments.length > 0 &&
                   assessments.map(item => (
                     <View style={styles.ListItem} key={item.created_at}>
@@ -301,7 +306,11 @@ function PlaceDetails({navigation, route}) {
                       </View>
                     </View>
                   ))}
-              </View>
+              </View>*/}
+              <Calendar
+                mode={ownsPlace(place) ? 'edit' : 'view'}
+                place={place}
+              />
             </View>
           </View>
         </ScrollView>
@@ -338,7 +347,12 @@ function PlaceDetails({navigation, route}) {
             style={styles.fab}
             icon="pencil-outline"
             color="white"
-            onPress={() => navigation.navigate('EditPlace', {place: place})}
+            onPress={() =>
+              navigation.navigate('EditPlace', {
+                place: place,
+                refreshPlace: refreshPlace,
+              })
+            }
           />
         ) : null}
       </>

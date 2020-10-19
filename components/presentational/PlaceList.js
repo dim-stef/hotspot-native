@@ -16,7 +16,7 @@ import {FAB} from 'react-native-paper';
 import AntDesignIcons from 'react-native-vector-icons/AntDesign';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import PopulationIndicator from './PopulationIndicator';
-import WaitTime from './WaitTime';
+import WaitTime from '../presentational/features/WaitTime/WaitTime';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import useTranslations from '../hooks/useTranslations';
 import {UserContext} from '../Context';

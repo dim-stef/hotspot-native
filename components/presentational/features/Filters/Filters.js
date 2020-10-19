@@ -15,8 +15,8 @@ import {
   PlaceTypesContext,
   LocationsContext,
   PopulationContext,
-} from '../Context';
-import useTranslations from '../hooks/useTranslations';
+} from '../../../Context';
+import useTranslations from '../../../hooks/useTranslations';
 
 const populationValues = [
   {
